@@ -4,6 +4,7 @@ module ca.humber.vehicle_maintenance_service {
 	requires org.hibernate.orm.core;
 	requires jakarta.persistence;
 	requires java.sql;
+	requires java.naming;
 
 	exports ca.humber.main;
 	exports ca.humber.dao;
