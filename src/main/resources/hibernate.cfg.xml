@@ -3,9 +3,9 @@
 		<property name="hibernate.connection.driver_class">
 			oracle.jdbc.OracleDriver</property>
 		<property name="hibernate.connection.url">
-			jdbc:oracle:thin:@10.114.192.5:1521:grok</property>
-		<property name="hibernate.connection.username">n01721372</property>
-		<property name="hibernate.connection.password">oracle</property>
+			jdbc:oracle:thin:@calvin.humber.ca:1521:grok</property>
+		<property name="hibernate.connection.username">allstars</property>
+		<property name="hibernate.connection.password">Ite5220</property>
 		<property name="hibernate.dialect">org.hibernate.dialect.OracleDialect</property>
 		<property name="hibernate.hbm2ddl.auto">update</property>
 
