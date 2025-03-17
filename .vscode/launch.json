@@ -1,0 +1,52 @@
+{
+    // 使用 IntelliSense 以得知可用的屬性。
+    // 暫留以檢視現有屬性的描述。
+    // 如需詳細資訊，請瀏覽: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+
+    "configurations": [
+        {
+            "type": "java",
+            "name": "loginUI_test",
+            "request": "launch",
+            "mainClass": "ca.humber.vehicle_maintenance_service/ca.humber.main.loginUI_test",
+            "projectName": "vehicle-maintenance-service"
+        },
+        {
+            "type": "java",
+            "name": "inventoryUI_test",
+            "request": "launch",
+            "mainClass": "ca.humber.vehicle_maintenance_service/ca.humber.main.inventoryUI_test",
+            "projectName": "vehicle-maintenance-service"
+        },
+        {
+            "type": "java",
+            "name": "uitest",
+            "request": "launch",
+            "mainClass": "ca.humber.vehicle_maintenance_service/ca.humber.main.uitest",
+            "projectName": "vehicle-maintenance-service"
+        },
+        {
+            "type": "java",
+            "name": "App",
+            "request": "launch",
+            "mainClass": "ca.humber.vehicle_maintenance_service/ca.humber.main.App",
+            "projectName": "vehicle-maintenance-service"
+        },
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "com.team2.main.Main",
+            "projectName": "Course-Management-Java",
+            "vmArgs": "--module-path /Users/samuellaw/Documents/GitHub/Course-Management-Java/lib --add-modules javafx.controls,javafx.fxml,javafx.graphics,javafx.base -Dprism.verbose=true -Dprism.order=sw"
+        },
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}",
+            "vmArgs": "--module-path /Users/samuellaw/Documents/GitHub/Course-Management-Java/lib --add-modules javafx.controls,javafx.fxml,javafx.graphics,javafx.base -Dprism.verbose=true -Dprism.order=sw"
+        }
+    ]
+}
