@@ -11,7 +11,7 @@
     <top>
         <HBox alignment="CENTER" prefHeight="80.0" style="-fx-background-color: #2c3e50;" BorderPane.alignment="CENTER">
             <children>
-                <Label text="inventory" textFill="WHITE">
+                <Label text="Vehicle Maintenance System" textFill="WHITE">
                     <font>
                         <Font name="System Bold" size="24.0" />
                     </font>
@@ -20,45 +20,210 @@
         </HBox>
     </top>
     <center>
-        <TableView fx:id="inventoryTable" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-            <columns>
-                <TableColumn fx:id="itemIdColumn" prefWidth="100.0" text="item ID" />
-                <TableColumn fx:id="itemNameColumn" prefWidth="200.0" text="item name" />
-                <TableColumn fx:id="categoryColumn" prefWidth="150.0" text="type" />
-                <TableColumn fx:id="quantityColumn" prefWidth="100.0" text="amount" />
-                <TableColumn fx:id="unitPriceColumn" prefWidth="120.0" text="unit price" />
-                <TableColumn fx:id="supplierColumn" prefWidth="200.0" text="supplyer" />
-            </columns>
-            <BorderPane.margin>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-            </BorderPane.margin>
-        </TableView>
+        <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
+            <tabs>
+                <!-- 庫存頁籤 -->
+                <Tab text="Inventory">
+                    <content>
+                        <BorderPane>
+                            <center>
+                                <TableView fx:id="inventoryTable" prefHeight="200.0" prefWidth="200.0">
+                                    <columns>
+                                        <TableColumn fx:id="itemIdColumn" prefWidth="100.0" text="item ID" />
+                                        <TableColumn fx:id="itemNameColumn" prefWidth="200.0" text="item name" />
+                                        <TableColumn fx:id="categoryColumn" prefWidth="150.0" text="type" />
+                                        <TableColumn fx:id="quantityColumn" prefWidth="100.0" text="amount" />
+                                        <TableColumn fx:id="unitPriceColumn" prefWidth="120.0" text="unit price" />
+                                        <TableColumn fx:id="supplierColumn" prefWidth="200.0" text="supplyer" />
+                                    </columns>
+                                    <BorderPane.margin>
+                                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                    </BorderPane.margin>
+                                </TableView>
+                            </center>
+                            <bottom>
+                                <VBox prefHeight="150.0" spacing="10.0">
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                            <children>
+                                                <Label text="search:" />
+                                                <TextField fx:id="searchField" prefHeight="30.0" prefWidth="300.0" />
+                                                <Button mnemonicParsing="false" onAction="#handleSearch" prefHeight="30.0" text="search" />
+                                            </children>
+                                            <padding>
+                                                <Insets left="10.0" />
+                                            </padding>
+                                        </HBox>
+                                        <HBox alignment="CENTER" spacing="20.0">
+                                            <children>
+                                                <Button mnemonicParsing="false" onAction="#handleAddItem" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #27ae60;" text="Add Item" textFill="WHITE" />
+                                                <Button mnemonicParsing="false" onAction="#handleEditItem" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #f39c12;" text="Edit Item" textFill="WHITE" />
+                                                <Button mnemonicParsing="false" onAction="#handleDeleteItem" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #e74c3c;" text="Delete Item" textFill="WHITE" />
+                                                <Button mnemonicParsing="false" onAction="#handleRefresh" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #3498db;" text="Refresh" textFill="WHITE" />
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="20.0" top="10.0" />
+                                            </padding>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+                            </bottom>
+                        </BorderPane>
+                    </content>
+                </Tab>
+                
+                <!-- 預約頁籤 -->
+                <Tab text="Appointments">
+                    <content>
+                        <BorderPane>
+                            <center>
+                                <TableView fx:id="appointmentTable" prefHeight="200.0" prefWidth="200.0">
+                                    <columns>
+                                        <TableColumn fx:id="appointmentIdColumn" prefWidth="100.0" text="Appointment ID" />
+                                        <TableColumn fx:id="customerNameColumn" prefWidth="150.0" text="Customer Name" />
+                                        <TableColumn fx:id="vehicleInfoColumn" prefWidth="150.0" text="Vehicle Info" />
+                                        <TableColumn fx:id="dateColumn" prefWidth="120.0" text="Date" />
+                                        <TableColumn fx:id="timeColumn" prefWidth="100.0" text="Time" />
+                                        <TableColumn fx:id="serviceTypeColumn" prefWidth="150.0" text="Service Type" />
+                                        <TableColumn fx:id="statusColumn" prefWidth="100.0" text="Status" />
+                                    </columns>
+                                    <BorderPane.margin>
+                                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                    </BorderPane.margin>
+                                </TableView>
+                            </center>
+                            <bottom>
+                                <VBox prefHeight="150.0" spacing="10.0">
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                            <children>
+                                                <Label text="search:" />
+                                                <TextField fx:id="appointmentSearchField" prefHeight="30.0" prefWidth="300.0" />
+                                                <Button mnemonicParsing="false" onAction="#handleAppointmentSearch" prefHeight="30.0" text="search" />
+                                            </children>
+                                            <padding>
+                                                <Insets left="10.0" />
+                                            </padding>
+                                        </HBox>
+                                        <HBox alignment="CENTER" spacing="20.0">
+                                            <children>
+                                                <Button mnemonicParsing="false" onAction="#handleAddAppointment" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #27ae60;" text="Add" textFill="WHITE" />
+                                                <Button mnemonicParsing="false" onAction="#handleEditAppointment" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #f39c12;" text="Edit" textFill="WHITE" />
+                                                <Button mnemonicParsing="false" onAction="#handleDeleteAppointment" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #e74c3c;" text="Delete" textFill="WHITE" />
+                                                <Button mnemonicParsing="false" onAction="#handleRefreshAppointment" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #3498db;" text="Refresh" textFill="WHITE" />
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="20.0" top="10.0" />
+                                            </padding>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+                            </bottom>
+                        </BorderPane>
+                    </content>
+                </Tab>
+                
+                <!-- 車輛頁籤 -->
+                <Tab text="Vehicles">
+                    <content>
+                        <BorderPane>
+                            <center>
+                                <TableView fx:id="vehicleTable" prefHeight="200.0" prefWidth="200.0">
+                                    <columns>
+                                        <TableColumn fx:id="vehicleIdColumn" prefWidth="100.0" text="Vehicle ID" />
+                                        <TableColumn fx:id="makeColumn" prefWidth="120.0" text="Make" />
+                                        <TableColumn fx:id="modelColumn" prefWidth="120.0" text="Model" />
+                                        <TableColumn fx:id="yearColumn" prefWidth="80.0" text="Year" />
+                                        <TableColumn fx:id="vinColumn" prefWidth="150.0" text="VIN" />
+                                        <TableColumn fx:id="ownerColumn" prefWidth="150.0" text="Owner" />
+                                        <TableColumn fx:id="lastServiceColumn" prefWidth="150.0" text="Last Service" />
+                                    </columns>
+                                    <BorderPane.margin>
+                                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                    </BorderPane.margin>
+                                </TableView>
+                            </center>
+                            <bottom>
+                                <VBox prefHeight="150.0" spacing="10.0">
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                            <children>
+                                                <Label text="search:" />
+                                                <TextField fx:id="vehicleSearchField" prefHeight="30.0" prefWidth="300.0" />
+                                                <Button mnemonicParsing="false" onAction="#handleVehicleSearch" prefHeight="30.0" text="search" />
+                                            </children>
+                                            <padding>
+                                                <Insets left="10.0" />
+                                            </padding>
+                                        </HBox>
+                                        <HBox alignment="CENTER" spacing="20.0">
+                                            <children>
+                                                <Button mnemonicParsing="false" onAction="#handleAddVehicle" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #27ae60;" text="Add" textFill="WHITE" />
+                                                <Button mnemonicParsing="false" onAction="#handleEditVehicle" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #f39c12;" text="Edit" textFill="WHITE" />
+                                                <Button mnemonicParsing="false" onAction="#handleDeleteVehicle" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #e74c3c;" text="Delete" textFill="WHITE" />
+                                                <Button mnemonicParsing="false" onAction="#handleRefreshVehicle" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #3498db;" text="Refresh" textFill="WHITE" />
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="20.0" top="10.0" />
+                                            </padding>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+                            </bottom>
+                        </BorderPane>
+                    </content>
+                </Tab>
+                
+                <!-- 客戶頁籤 -->
+                <Tab text="Customers">
+                    <content>
+                        <BorderPane>
+                            <center>
+                                <TableView fx:id="customerTable" prefHeight="200.0" prefWidth="200.0">
+                                    <columns>
+                                        <TableColumn fx:id="customerIdColumn" prefWidth="100.0" text="Customer ID" />
+                                        <TableColumn fx:id="firstNameColumn" prefWidth="120.0" text="First Name" />
+                                        <TableColumn fx:id="lastNameColumn" prefWidth="120.0" text="Last Name" />
+                                        <TableColumn fx:id="phoneColumn" prefWidth="120.0" text="Phone" />
+                                        <TableColumn fx:id="emailColumn" prefWidth="150.0" text="Email" />
+                                        <TableColumn fx:id="addressColumn" prefWidth="250.0" text="Address" />
+                                    </columns>
+                                    <BorderPane.margin>
+                                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                    </BorderPane.margin>
+                                </TableView>
+                            </center>
+                            <bottom>
+                                <VBox prefHeight="150.0" spacing="10.0">
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                            <children>
+                                                <Label text="search:" />
+                                                <TextField fx:id="customerSearchField" prefHeight="30.0" prefWidth="300.0" />
+                                                <Button mnemonicParsing="false" onAction="#handleCustomerSearch" prefHeight="30.0" text="search" />
+                                            </children>
+                                            <padding>
+                                                <Insets left="10.0" />
+                                            </padding>
+                                        </HBox>
+                                        <HBox alignment="CENTER" spacing="20.0">
+                                            <children>
+                                                <Button mnemonicParsing="false" onAction="#handleAddCustomer" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #27ae60;" text="Add" textFill="WHITE" />
+                                                <Button mnemonicParsing="false" onAction="#handleEditCustomer" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #f39c12;" text="Edit" textFill="WHITE" />
+                                                <Button mnemonicParsing="false" onAction="#handleDeleteCustomer" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #e74c3c;" text="Delete" textFill="WHITE" />
+                                                <Button mnemonicParsing="false" onAction="#handleRefreshCustomer" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #3498db;" text="Refresh" textFill="WHITE" />
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="20.0" top="10.0" />
+                                            </padding>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+                            </bottom>
+                        </BorderPane>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
     </center>
-    <bottom>
-        <VBox prefHeight="150.0" spacing="10.0" BorderPane.alignment="CENTER">
-            <children>
-                <HBox alignment="CENTER_LEFT" spacing="10.0">
-                    <children>
-                        <Label text="search:" />
-                        <TextField fx:id="searchField" prefHeight="30.0" prefWidth="300.0"  />
-                        <Button mnemonicParsing="false" onAction="#handleSearch" prefHeight="30.0" text="search" />
-                    </children>
-                    <padding>
-                        <Insets left="10.0" />
-                    </padding>
-                </HBox>
-                <HBox alignment="CENTER" spacing="20.0">
-                    <children>
-                        <Button mnemonicParsing="false" onAction="#handleAddItem" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #27ae60;" text="Add Item" textFill="WHITE" />
-                        <Button mnemonicParsing="false" onAction="#handleEditItem" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #f39c12;" text="Edit Item" textFill="WHITE" />
-                        <Button mnemonicParsing="false" onAction="#handleDeleteItem" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #e74c3c;" text="Delete Item" textFill="WHITE" />
-                        <Button mnemonicParsing="false" onAction="#handleRefresh" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #3498db;" text="Refresh" textFill="WHITE" />
-                    </children>
-                    <padding>
-                        <Insets bottom="20.0" top="10.0" />
-                    </padding>
-                </HBox>
-            </children>
-        </VBox>
-    </bottom>
 </BorderPane>
