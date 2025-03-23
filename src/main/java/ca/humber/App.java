@@ -1,6 +1,5 @@
 package ca.humber;
 
-import ca.humber.model.Student;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

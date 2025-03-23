@@ -11,7 +11,7 @@ import ca.humber.model.Course;
 public class CourseService {
 
 	public static List<Course> listCourses() throws DataNotFoundException {
-		List<Course> courses = CourseDAO.getCourses();
+		List<Course> courses = CourseDAO.getCoursesList();
 		if (courses.isEmpty()) {
 			throw new DataNotFoundException("No courses found.");
 		}

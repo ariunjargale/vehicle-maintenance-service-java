@@ -28,13 +28,6 @@ public class Course {
 	@Column(name = "CREDITS", nullable = false)
 	private Integer credits;
 
-	@ManyToOne
-	@JoinColumn(name = "INSTRUCTOR_ID", referencedColumnName = "INSTRUCTOR_ID", nullable = true)
-	private Instructor instructor;
-
-	@OneToMany(mappedBy = "course", cascade = CascadeType.PERSIST, orphanRemoval = false)
-	private List<StudentCourse> studentCourses;
-
 	// Getters and Setters
 	public Integer getCourseId() {
 		return courseId;
@@ -58,22 +51,6 @@ public class Course {
 
 	public void setCredits(Integer credits) {
 		this.credits = credits;
-	}
-
-	public Instructor getInstructor() {
-		return instructor;
-	}
-
-	public void setInstructor(Instructor instructor) {
-		this.instructor = instructor;
-	}
-
-	public List<StudentCourse> getStudentCourses() {
-		return studentCourses;
-	}
-
-	public void setStudentCourses(List<StudentCourse> studentCourses) {
-		this.studentCourses = studentCourses;
 	}
 
 	@Override
