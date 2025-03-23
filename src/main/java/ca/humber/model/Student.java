@@ -1,15 +1,14 @@
-/**
- *
- * @author Ariunjargal Erdenebaatar
- * @created Mar 6, 2025
- */
 package ca.humber.model;
 
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -26,6 +25,9 @@ public class Student {
 
 	@Column(name = "EMAIL", nullable = false, unique = true, length = 100)
 	private String email;
+
+	@OneToMany(mappedBy = "student", cascade = CascadeType.PERSIST, orphanRemoval = false)
+	private List<StudentCourse> studentCourses;
 
 	// Getters and Setters
 	public Integer getStudentId() {
@@ -52,6 +54,13 @@ public class Student {
 		this.email = email;
 	}
 
+	public List<StudentCourse> getStudentCourses() {
+		return studentCourses;
+	}
+
+	public void setStudentCourses(List<StudentCourse> studentCourses) {
+		this.studentCourses = studentCourses;
+	}
 	@Override
 	public String toString() {
 		return name;

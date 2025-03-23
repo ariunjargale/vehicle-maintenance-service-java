@@ -4,42 +4,38 @@ import java.util.List;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.query.Query;
 
-import ca.humber.exceptions.ConstraintException;
-import ca.humber.model.Student;
+import ca.humber.model.Instructor;
 import ca.humber.util.HibernateUtil;
 
-public class StudentDAO {
+public class InstructorDAO {
 
-	public static List<Student> getStudents() {
+	public static List<Instructor> getInstructors() {
 		try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-			Query<Student> query = session.createQuery("FROM Student", Student.class);
-			List<Student> students = query.list();
-			return students;
+			Query<Instructor> query = session.createQuery("FROM Instructor", Instructor.class);
+			return query.list();
 		}
 	}
 
-	public static Student getStudentById(int id) {
+	public static Instructor getInstructorById(int id) {
 		try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-			Student student = session.get(Student.class, id);
-			return student;
+			return session.get(Instructor.class, id);
 		}
 	}
 
 	@SuppressWarnings("deprecation")
-	public static void insertStudent(Student student) {
+	public static void insertInstructor(Instructor instructor) {
 		Transaction tx = null;
 		Session session = null;
 		try {
 			session = HibernateUtil.getSessionFactory().openSession();
 			tx = session.beginTransaction();
 
-			session.save(student);
+			session.save(instructor);
 
 			tx.commit();
-			System.out.println("Student added successfully!");
+			System.out.println("Instructor added successfully!");
 		} catch (Exception e) {
 			if (tx != null && tx.getStatus().canRollback()) {
 				tx.rollback();
@@ -53,17 +49,17 @@ public class StudentDAO {
 	}
 
 	@SuppressWarnings("deprecation")
-	public static boolean updateStudent(Student student) {
+	public static boolean updateInstructor(Instructor instructor) {
 		Transaction tx = null;
 		Session session = null;
 		try {
 			session = HibernateUtil.getSessionFactory().openSession();
 			tx = session.beginTransaction();
 
-			session.update(student);
+			session.update(instructor);
 
 			tx.commit();
-			System.out.println("Student updated successfully!");
+			System.out.println("Instructor updated successfully!");
 			return true;
 		} catch (Exception e) {
 			if (tx != null && tx.getStatus().canRollback()) {
@@ -79,28 +75,23 @@ public class StudentDAO {
 	}
 
 	@SuppressWarnings("deprecation")
-	public static boolean deleteStudent(int studentId) throws ConstraintException {
+	public static boolean deleteInstructor(int instructorId) {
 		Transaction tx = null;
 		Session session = null;
 		try {
 			session = HibernateUtil.getSessionFactory().openSession();
 			tx = session.beginTransaction();
 
-			Student student = session.get(Student.class, studentId);
-			if (student != null) {
-				session.delete(student);
+			Instructor instructor = session.get(Instructor.class, instructorId);
+			if (instructor != null) {
+				session.delete(instructor);
 				tx.commit();
-				System.out.println("Student deleted successfully!");
+				System.out.println("Instructor deleted successfully!");
 				return true;
 			} else {
-				System.out.println("Student with ID " + studentId + " not found.");
+				System.out.println("Instructor with ID " + instructorId + " not found.");
 				return false;
 			}
-		} catch (ConstraintViolationException e) {
-			if (tx != null && tx.getStatus().canRollback()) {
-				tx.rollback();
-			}
-			throw new ConstraintException("Cannot delete student. The student is enrolled in courses.");
 		} catch (Exception e) {
 			if (tx != null && tx.getStatus().canRollback()) {
 				tx.rollback();
