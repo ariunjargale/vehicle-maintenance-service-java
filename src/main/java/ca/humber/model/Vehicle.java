@@ -1,8 +1,5 @@
 package ca.humber.model;
 
-import java.util.List;
-
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,28 +7,49 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "VEHICLE_SAS")
+@Table(name = "VEHICLE")
 public class Vehicle {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "VEHICLE_ID")
     private Integer vehicleId;
 
-    @Column(name = "MAKE", nullable = false, length = 50)
-    private String make;
+    @ManyToOne
+    @JoinColumn(name = "CUSTOMER_ID", nullable = false)
+    private Customer customer;
 
-    @Column(name = "MODEL", nullable = false, length = 50)
+    @Column(name = "MODEL", nullable = false)
     private String model;
 
     @Column(name = "YEAR", nullable = false)
     private Integer year;
 
-    @Column(name = "VIN", unique = true, nullable = false, length = 17)
+    @Column(name = "VIN", nullable = false, unique = true, length = 17)
     private String vin;
+
+    @Column(name = "LICENSE_PLATE", nullable = false, unique = true, length = 50)
+    private String licensePlate;
+
+    @Column(name = "IS_ACTIVE", nullable = false)
+    private Boolean isActive = true;
+
+    // 無參數建構函式
+    public Vehicle() {
+    }
+
+    // 有參數建構函式
+    public Vehicle(Customer customer, String model, Integer year, String vin, String licensePlate) {
+        this.customer = customer;
+        this.model = model;
+        this.year = year;
+        this.vin = vin;
+        this.licensePlate = licensePlate;
+        this.isActive = true;
+    }
 
     // Getters and Setters
     public Integer getVehicleId() {
@@ -42,12 +60,12 @@ public class Vehicle {
         this.vehicleId = vehicleId;
     }
 
-    public String getMake() {
-        return make;
+    public Customer getCustomer() {
+        return customer;
     }
 
-    public void setMake(String make) {
-        this.make = make;
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
     }
 
     public String getModel() {
@@ -74,8 +92,24 @@ public class Vehicle {
         this.vin = vin;
     }
 
+    public String getLicensePlate() {
+        return licensePlate;
+    }
+
+    public void setLicensePlate(String licensePlate) {
+        this.licensePlate = licensePlate;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
     @Override
     public String toString() {
-        return make + " " + model + " (" + year + ")";
+        return year + " " + model + " (" + licensePlate + ")";
     }
-	}
+}
