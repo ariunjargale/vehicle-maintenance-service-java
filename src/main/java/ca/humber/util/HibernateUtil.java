@@ -4,6 +4,8 @@ import ca.humber.model.Course;
 import ca.humber.model.RolePermission;
 import ca.humber.model.UserRole;
 import ca.humber.model.Users;
+import ca.humber.model.Vehicle;
+import ca.humber.model.Customer;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -19,6 +21,10 @@ public class HibernateUtil {
     private static SessionFactory buildSessionFactory() {
         try {
             return new Configuration().configure("hibernate.cfg.xml").addAnnotatedClass(Course.class).addAnnotatedClass(Users.class).addAnnotatedClass(UserRole.class).addAnnotatedClass(RolePermission.class)
+            return new Configuration().configure("hibernate.cfg.xml")
+                    .addAnnotatedClass(Course.class)
+                    .addAnnotatedClass(Vehicle.class)
+                    .addAnnotatedClass(Customer.class)
                     .buildSessionFactory();
         } catch (Throwable ex) {
             throw new ExceptionInInitializerError(ex);
