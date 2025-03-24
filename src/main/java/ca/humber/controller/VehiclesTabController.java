@@ -176,8 +176,9 @@ public class VehiclesTabController implements Initializable {
         }
 
         boolean confirm = AlertDialog.showConfirm("Confirm Deletion",
-                "Are you sure you want to delete the vehicle " + selectedVehicle.getYear() + " " + selectedVehicle.getMake() +
-                        " (License Plate: " + selectedVehicle.getLicensePlate() + ")?");
+                "Are you sure you want to delete the vehicle " + selectedVehicle.getYear() + " " + 
+                selectedVehicle.getMake() + " " + selectedVehicle.getModel() + " with VIN: " + 
+                selectedVehicle.getVin() + "?");
 
         if (confirm) {
             try {

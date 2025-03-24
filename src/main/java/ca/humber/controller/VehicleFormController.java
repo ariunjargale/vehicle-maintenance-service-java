@@ -25,8 +25,6 @@ public class VehicleFormController implements Initializable {
     @FXML
     private TextField vinField;
     @FXML
-    private TextField licensePlateField;
-    @FXML
     private ComboBox<Customer> customerComboBox;
     @FXML
     private Button saveButton;
@@ -99,7 +97,6 @@ public class VehicleFormController implements Initializable {
         modelField.setText(vehicle.getModel());
         yearField.setText(String.valueOf(vehicle.getYear()));
         vinField.setText(vehicle.getVin());
-        licensePlateField.setText(vehicle.getLicensePlate());
         
         // Set the selected customer
         if (vehicle.getCustomer() != null) {
@@ -125,7 +122,6 @@ public class VehicleFormController implements Initializable {
             String model = modelField.getText().trim();
             int year = Integer.parseInt(yearField.getText().trim());
             String vin = vinField.getText().trim();
-            String licensePlate = licensePlateField.getText().trim();
             Customer selectedCustomer = customerComboBox.getValue();
             
             if ("add".equals(mode)) {
@@ -135,7 +131,6 @@ public class VehicleFormController implements Initializable {
                 newVehicle.setModel(model);
                 newVehicle.setYear(year);
                 newVehicle.setVin(vin);
-                newVehicle.setLicensePlate(licensePlate);
                 newVehicle.setCustomer(selectedCustomer);
                 newVehicle.setIsActive(true);
                 
@@ -148,7 +143,6 @@ public class VehicleFormController implements Initializable {
                 existingVehicle.setModel(model);
                 existingVehicle.setYear(year);
                 existingVehicle.setVin(vin);
-                existingVehicle.setLicensePlate(licensePlate);
                 existingVehicle.setCustomer(selectedCustomer);
                 
                 // Save to the database

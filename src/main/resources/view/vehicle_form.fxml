@@ -38,13 +38,9 @@
       <Label text="Vehicle Identification Number (VIN):" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
       <TextField fx:id="vinField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
-      <!-- License Plate -->
-      <Label text="License Plate:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-      <TextField fx:id="licensePlateField" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-
       <!-- Owner -->
-      <Label text="Owner:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-      <ComboBox fx:id="customerComboBox" GridPane.rowIndex="5" GridPane.columnIndex="1" maxWidth="Infinity"/>
+      <Label text="Owner:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+      <ComboBox fx:id="customerComboBox" GridPane.rowIndex="4" GridPane.columnIndex="1" maxWidth="Infinity"/>
     </GridPane>
 
     <Separator VBox.vgrow="ALWAYS"/>
