@@ -35,7 +35,8 @@ public class VehicleDAO {
         return HibernateUtil.executeWithResult(session -> {
             String searchPattern = "%" + searchTerm.toLowerCase() + "%";
             Query<Vehicle> query = session.createQuery(
-                "FROM Vehicle v WHERE v.isActive = true AND (LOWER(v.model) LIKE :searchPattern " +
+                "FROM Vehicle v WHERE v.isActive = true AND (LOWER(v.make) LIKE :searchPattern " +
+                "OR LOWER(v.model) LIKE :searchPattern " +
                 "OR LOWER(v.vin) LIKE :searchPattern OR LOWER(v.licensePlate) LIKE :searchPattern " +
                 "OR CAST(v.year AS string) LIKE :searchPattern)", 
                 Vehicle.class);
@@ -69,7 +70,7 @@ public class VehicleDAO {
         }
         
         try {
-            // 軟刪除 - 只將狀態設為非活動
+            // Soft delete - only mark the status as inactive
             vehicle.setIsActive(false);
             HibernateUtil.executeInsideTransaction(session -> session.update(vehicle));
             System.out.println("Vehicle deactivated successfully.");
@@ -80,9 +81,9 @@ public class VehicleDAO {
             e.printStackTrace();
             return false;
         }
-    }
-    
-    // 硬刪除 - 只在確定沒有關聯的預約時使用
+        }
+        
+        // Hard delete - only use when there are no associated appointments
     public static boolean hardDeleteVehicle(int vehicleId) throws ConstraintException {
         Vehicle vehicle = HibernateUtil.executeWithResult(session -> session.get(Vehicle.class, vehicleId));
         
@@ -103,3 +104,12 @@ public class VehicleDAO {
         }
     }
 }
+
+
+// public static List<Customer> getActiveCustomers() {
+//     return HibernateUtil.executeWithResult(session -> {
+//         Query<Customer> query = session.createQuery("FROM Customer WHERE isActive = true", Customer.class);
+//         return query.list();
+//     });
+// }
+// add these code to customer DAO for get custeomr
