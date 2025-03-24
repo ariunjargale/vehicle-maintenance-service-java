@@ -37,7 +37,7 @@ public class VehicleDAO {
             Query<Vehicle> query = session.createQuery(
                 "FROM Vehicle v WHERE v.isActive = true AND (LOWER(v.make) LIKE :searchPattern " +
                 "OR LOWER(v.model) LIKE :searchPattern " +
-                "OR LOWER(v.vin) LIKE :searchPattern OR LOWER(v.licensePlate) LIKE :searchPattern " +
+                "OR LOWER(v.vin) LIKE :searchPattern " +
                 "OR CAST(v.year AS string) LIKE :searchPattern)", 
                 Vehicle.class);
             query.setParameter("searchPattern", searchPattern);
@@ -104,12 +104,3 @@ public class VehicleDAO {
         }
     }
 }
-
-
-// public static List<Customer> getActiveCustomers() {
-//     return HibernateUtil.executeWithResult(session -> {
-//         Query<Customer> query = session.createQuery("FROM Customer WHERE isActive = true", Customer.class);
-//         return query.list();
-//     });
-// }
-// add these code to customer DAO for get custeomr
