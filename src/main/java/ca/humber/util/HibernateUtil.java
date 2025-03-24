@@ -64,7 +64,7 @@ public class HibernateUtil {
     }
 
 
-    // execute without result
+/*    // execute without result
     public static void executeInsideTransaction(Consumer<Session> action) {
         Transaction tx = null;
         Session session = SessionManager.getSession(); // Current user's session
@@ -94,6 +94,30 @@ public class HibernateUtil {
             if (tx != null) tx.rollback();
             throw new RuntimeException(e);
         }
+    }*/
+public static void executeInsideTransaction(Consumer<Session> action) {
+    Transaction tx = null;
+    try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        tx = session.beginTransaction();
+        action.accept(session);
+        tx.commit();
+    } catch (Exception e) {
+        if (tx != null)
+            tx.rollback();
+        e.printStackTrace();
     }
+}
 
+    public static <T> T executeWithResult(Function<Session, T> function) {
+        Transaction tx = null;
+        try (Session session = getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
+            T result = function.apply(session);
+            tx.commit();
+            return result;
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw new RuntimeException(e);
+        }
+    }
 }
