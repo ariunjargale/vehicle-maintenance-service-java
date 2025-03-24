@@ -34,22 +34,18 @@ public class Vehicle {
     @Column(name = "VIN", nullable = false, unique = true, length = 17)
     private String vin;
 
-    @Column(name = "LICENSE_PLATE", nullable = false, unique = true, length = 50)
-    private String licensePlate;
-
     @Column(name = "IS_ACTIVE", nullable = false)
     private Boolean isActive = true;
 
     public Vehicle() {
     }
 
-    public Vehicle(Customer customer, String make, String model, Integer year, String vin, String licensePlate) {
+    public Vehicle(Customer customer, String make, String model, Integer year, String vin) {
         this.customer = customer;
         this.make = make;
         this.model = model;
         this.year = year;
         this.vin = vin;
-        this.licensePlate = licensePlate;
         this.isActive = true;
     }
 
@@ -102,14 +98,6 @@ public class Vehicle {
         this.vin = vin;
     }
 
-    public String getLicensePlate() {
-        return licensePlate;
-    }
-
-    public void setLicensePlate(String licensePlate) {
-        this.licensePlate = licensePlate;
-    }
-
     public Boolean getIsActive() {
         return isActive;
     }
@@ -120,6 +108,6 @@ public class Vehicle {
 
     @Override
     public String toString() {
-        return year + " " + make + " " + model + " (" + licensePlate + ")";
+        return year + " " + make + " " + model + " (VIN: " + vin + ")";
     }
 }
