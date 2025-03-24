@@ -1,5 +1,7 @@
 package ca.humber;
 
+import ca.humber.service.AuthService;
+import ca.humber.util.SessionManager;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -15,15 +17,13 @@ import java.util.List;
 public class App extends Application {
 
     private static Scene scene;
+    private final AuthService authService = new AuthService();
 
     @Override
     public void start(Stage stage) throws IOException {
         scene = new Scene(loadFXML("/view/login"), 400, 250);
         stage.setScene(scene);
         stage.show();
-
-//        List<Student> students = ca.humber.dao.StudentDAO.getStudents();
-//		System.out.println(students);
     }
 
     public static void setRoot(String fxml) throws IOException {
@@ -37,6 +37,13 @@ public class App extends Application {
 
     public static void main(String[] args) {
         launch();
+    }
+
+    // Closing Hibernate session when app close
+    @Override
+    public void stop() throws Exception {
+        authService.logout();
+        super.stop();
     }
 
 }
