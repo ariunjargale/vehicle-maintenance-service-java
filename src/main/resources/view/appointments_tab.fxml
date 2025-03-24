@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="ca.humber.controller.AppointmentsTabController"
+            prefHeight="400.0" prefWidth="700.0">
+    <center>
+        <TableView fx:id="appointmentTable" prefHeight="200.0" prefWidth="200.0">
+            <columns>
+                <TableColumn fx:id="appointmentIdColumn" prefWidth="100.0" text="Appointment ID" />
+                <TableColumn fx:id="customerNameColumn" prefWidth="150.0" text="Customer Name" />
+                <TableColumn fx:id="vehicleInfoColumn" prefWidth="150.0" text="Vehicle Info" />
+                <TableColumn fx:id="dateColumn" prefWidth="120.0" text="Date" />
+                <TableColumn fx:id="timeColumn" prefWidth="100.0" text="Time" />
+                <TableColumn fx:id="serviceTypeColumn" prefWidth="150.0" text="Service Type" />
+                <TableColumn fx:id="statusColumn" prefWidth="100.0" text="Status" />
+            </columns>
+            <BorderPane.margin>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </BorderPane.margin>
+        </TableView>
+    </center>
+    <bottom>
+        <VBox prefHeight="150.0" spacing="10.0">
+            <children>
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <children>
+                        <Label text="search:" />
+                        <TextField fx:id="appointmentSearchField" prefHeight="30.0" prefWidth="300.0" />
+                        <Button mnemonicParsing="false" onAction="#handleAppointmentSearch" prefHeight="30.0" text="search" />
+                    </children>
+                    <padding>
+                        <Insets left="10.0" />
+                    </padding>
+                </HBox>
+                <HBox alignment="CENTER" spacing="20.0">
+                    <children>
+                        <Button mnemonicParsing="false" onAction="#handleAddAppointment" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #27ae60;" text="Add" textFill="WHITE" />
+                        <Button mnemonicParsing="false" onAction="#handleEditAppointment" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #f39c12;" text="Edit" textFill="WHITE" />
+                        <Button mnemonicParsing="false" onAction="#handleDeleteAppointment" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #e74c3c;" text="Delete" textFill="WHITE" />
+                        <Button mnemonicParsing="false" onAction="#handleRefreshAppointment" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #3498db;" text="Refresh" textFill="WHITE" />
+                    </children>
+                    <padding>
+                        <Insets bottom="20.0" top="10.0" />
+                    </padding>
+                </HBox>
+            </children>
+        </VBox>
+    </bottom>
+</BorderPane>
