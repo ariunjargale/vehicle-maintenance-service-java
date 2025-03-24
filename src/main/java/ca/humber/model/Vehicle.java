@@ -22,6 +22,9 @@ public class Vehicle {
     @JoinColumn(name = "CUSTOMER_ID", nullable = false)
     private Customer customer;
 
+    @Column(name = "MAKE", nullable = false)
+    private String make;
+    
     @Column(name = "MODEL", nullable = false)
     private String model;
 
@@ -37,13 +40,12 @@ public class Vehicle {
     @Column(name = "IS_ACTIVE", nullable = false)
     private Boolean isActive = true;
 
-    // 無參數建構函式
     public Vehicle() {
     }
 
-    // 有參數建構函式
-    public Vehicle(Customer customer, String model, Integer year, String vin, String licensePlate) {
+    public Vehicle(Customer customer, String make, String model, Integer year, String vin, String licensePlate) {
         this.customer = customer;
+        this.make = make;
         this.model = model;
         this.year = year;
         this.vin = vin;
@@ -68,6 +70,14 @@ public class Vehicle {
         this.customer = customer;
     }
 
+    public String getMake() {
+        return make;
+    }
+
+    public void setMake(String make) {
+        this.make = make;
+    }
+    
     public String getModel() {
         return model;
     }
@@ -110,6 +120,6 @@ public class Vehicle {
 
     @Override
     public String toString() {
-        return year + " " + model + " (" + licensePlate + ")";
+        return year + " " + make + " " + model + " (" + licensePlate + ")";
     }
 }
