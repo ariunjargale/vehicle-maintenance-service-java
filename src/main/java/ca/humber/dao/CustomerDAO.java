@@ -73,7 +73,7 @@ public class CustomerDAO {
         }
         
         // 檢查客戶是否有關聯的車輛
-        List<Vehicle> vehicles = VehicleDAO.getVehiclesByCustomerId(customerId);
+        List<Vehicle> vehicles = VehicleDAOold.getVehiclesByCustomerId(customerId);
         if (!vehicles.isEmpty()) {
             throw new ConstraintException("Cannot delete customer. Customer has " + vehicles.size() + " vehicles registered. Please delete or transfer vehicles first.");
         }
@@ -100,7 +100,7 @@ public class CustomerDAO {
         }
         
         // 檢查客戶是否有關聯的車輛
-        List<Vehicle> vehicles = VehicleDAO.getVehiclesByCustomerId(customerId);
+        List<Vehicle> vehicles = VehicleDAOold.getVehiclesByCustomerId(customerId);
         if (!vehicles.isEmpty()) {
             throw new ConstraintException("Cannot delete customer. Customer has " + vehicles.size() + " vehicles registered. Please delete or transfer vehicles first.");
         }

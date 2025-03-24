@@ -1,7 +1,7 @@
 package ca.humber.controller;
 
 import ca.humber.dao.CustomerDAO;
-import ca.humber.dao.VehicleDAO;
+import ca.humber.dao.VehicleDAOold;
 import ca.humber.model.Customer;
 import ca.humber.model.Vehicle;
 import javafx.collections.FXCollections;
@@ -135,7 +135,7 @@ public class VehicleFormController implements Initializable {
                 newVehicle.setIsActive(true);
                 
                 // Save to the database
-                VehicleDAO.insertVehicle(newVehicle);
+                VehicleDAOold.insertVehicle(newVehicle);
                 AlertDialog.showSuccess("Success", "Vehicle added successfully");
             } else {
                 // Update the existing vehicle
@@ -146,7 +146,7 @@ public class VehicleFormController implements Initializable {
                 existingVehicle.setCustomer(selectedCustomer);
                 
                 // Save to the database
-                boolean success = VehicleDAO.updateVehicle(existingVehicle);
+                boolean success = VehicleDAOold.updateVehicle(existingVehicle);
                 if (success) {
                     AlertDialog.showSuccess("Success", "Vehicle updated successfully");
                 } else {
