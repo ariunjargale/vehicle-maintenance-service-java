@@ -6,9 +6,11 @@ module ca.humber {
     requires java.sql;
     requires java.naming;
 
-    opens ca.humber to javafx.fxml;
-    opens ca.humber.model to org.hibernate.orm.core;
     exports ca.humber;
+    exports ca.humber.model;
     exports ca.humber.controller;
+
     opens ca.humber.controller to javafx.fxml;
+    opens ca.humber to javafx.fxml;
+    opens ca.humber.model to javafx.base, javafx.fxml, org.hibernate.orm.core;
 }
