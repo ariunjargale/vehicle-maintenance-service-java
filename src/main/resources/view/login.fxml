@@ -1,35 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.text.Font?>
-<?import javafx.scene.text.Text?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<GridPane xmlns:fx="http://javafx.com/fxml"
-          fx:controller="ca.humber.controller.LoginController"
-          alignment="CENTER" hgap="10" vgap="10">
-    <padding>
-        <Insets top="25" right="25" bottom="25" left="25"/>
-    </padding>
+<BorderPane prefHeight="400.0" prefWidth="700.0" style="-fx-background-color: #2c3e50;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ca.humber.controller.LoginController">
 
-    <Text text="Welcome" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2">
-        <font>
-            <Font name="Tahoma" size="20" />
-        </font>
-    </Text>
+    <!-- Title -->
+    <top>
+        <HBox alignment="CENTER">
+            <padding>
+                <Insets left="20" right="20" top="80" />
+            </padding>
+            <children>
+                <Label prefHeight="31.0" prefWidth="360.0" text="Vehicle Maintenance System" textFill="WHITE">
+                    <font>
+                        <Font name="System Bold" size="26.0" />
+                    </font>
+                </Label>
+            </children>
+        </HBox>
+    </top>
 
-    <Label text="User Name:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-    <TextField fx:id="usernameField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
 
-    <Label text="Password:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-    <PasswordField fx:id="passwordField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+    <!-- Login Form -->
+    <center>
+        <GridPane alignment="CENTER" hgap="10" vgap="10">
+            <padding>
+                <Insets bottom="25" left="25" right="25" top="25" />
+            </padding>
 
-    <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="4" alignment="BOTTOM_RIGHT">
-        <Button text="Sign in" onAction="#handleLogin" prefWidth="100"/>
-    </HBox>
-</GridPane>
+            <Label text="User Name:" textFill="WHITE" GridPane.columnIndex="0" GridPane.rowIndex="1">
+            <font>
+               <Font size="15.0" />
+            </font></Label>
+            <TextField fx:id="usernameField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+            <Label text="Password:" textFill="WHITE" GridPane.columnIndex="0" GridPane.rowIndex="2">
+            <font>
+               <Font size="15.0" />
+            </font></Label>
+            <PasswordField fx:id="passwordField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+            <HBox alignment="CENTER_RIGHT" spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                <Button onAction="#handleLogin" prefWidth="100" style="-fx-background-color: #3498db;  /* Sky Blue */                -fx-text-fill: white;                -fx-font-size: 14px;                -fx-font-weight: bold;                -fx-background-radius: 8;                -fx-border-color: transparent;" text="Sign in">
+               <font>
+                  <Font size="15.0" />
+               </font></Button>
+
+            </HBox>
+         <columnConstraints>
+            <ColumnConstraints />
+            <ColumnConstraints />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+         </rowConstraints>
+
+        </GridPane>
+    </center>
+    <bottom>
+        <HBox alignment="CENTER">
+            <padding>
+                <Insets bottom="20" left="10" right="10" top="10" />
+            </padding>
+
+            <children>
+                <Label prefHeight="18.0" prefWidth="176.0" text="Made with ❤️ by AllStars ✨" textFill="#ffffffcc">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font></Label>
+            </children>
+        </HBox>
+    </bottom>
+</BorderPane>

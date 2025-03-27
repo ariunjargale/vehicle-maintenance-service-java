@@ -28,8 +28,7 @@ public class LoginController {
         }
 
         try {
-            //TODO: Ari
-//            authService.login(username, password);
+            authService.login(username, password);
             openDashboard();
         } catch (Exception e) {
             AlertDialog.showWarning("Login", e.getMessage());
@@ -37,7 +36,7 @@ public class LoginController {
     }
 
     private void openDashboard() {
-//        System.out.println("Login successful. Welcome: " + SessionManager.getCurrentUser().getUsername());
+        System.out.println("Login successful. Welcome: " + SessionManager.getCurrentUser().getUsername());
 
         try {
             Stage stage = (Stage) usernameField.getScene().getWindow();
