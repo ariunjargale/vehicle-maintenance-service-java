@@ -7,6 +7,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class LoginController {
 
@@ -16,6 +18,7 @@ public class LoginController {
     private PasswordField passwordField;
 
     private final AuthService authService = new AuthService();
+    private static final int LOGIN_TIMEOUT_SECONDS = 10;
 
     @FXML
     private void handleLogin() {
@@ -27,11 +30,28 @@ public class LoginController {
             return;
         }
 
+        CompletableFuture<Void> loginTask = CompletableFuture.runAsync(() -> {
+            try {
+                authService.login(username, password);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        // Handle timeout
         try {
-            authService.login(username, password);
+            loginTask.get(LOGIN_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             openDashboard();
+        } catch (java.util.concurrent.TimeoutException e) {
+            // Login timeout
+            javafx.application.Platform.runLater(() -> {
+                AlertDialog.showWarning("Login Timeout", "Server response took too long. Please try again later.");
+            });
         } catch (Exception e) {
-            AlertDialog.showWarning("Login", e.getMessage());
+            // Other login errors
+            javafx.application.Platform.runLater(() -> {
+                AlertDialog.showWarning("Login", e.getMessage());
+            });
         }
     }
 
