@@ -32,7 +32,7 @@ public class Appointment {
     @Temporal(TemporalType.DATE)
     private Date appointmentDate;
 
-    @Column(name = "STATUS_ID", nullable = false, length = 1)
+    @Column(name = "STATUS_ID", nullable = false, columnDefinition = "CHAR(1 BYTE)")
     private String statusId;
 
     @Column(name = "IS_ACTIVE", nullable = false)

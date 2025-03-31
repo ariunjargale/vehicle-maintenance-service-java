@@ -19,10 +19,12 @@ public class HibernateUtil {
                     .addAnnotatedClass(Course.class)
                     .addAnnotatedClass(Vehicle.class)
                     .addAnnotatedClass(Customer.class)
-                    .addAnnotatedClass(Course.class)
                     .addAnnotatedClass(Users.class)
                     .addAnnotatedClass(UserRole.class)
                     .addAnnotatedClass(RolePermission.class)
+                    .addAnnotatedClass(Service.class) 
+                    .addAnnotatedClass(Mechanic.class)  
+                    .addAnnotatedClass(Appointment.class)  
                     .buildSessionFactory();
         } catch (Throwable ex) {
             throw new ExceptionInInitializerError(ex);
@@ -63,13 +65,9 @@ public class HibernateUtil {
         }
     }
 
-
-/*    // execute without result
     public static void executeInsideTransaction(Consumer<Session> action) {
         Transaction tx = null;
-        Session session = SessionManager.getSession(); // Current user's session
-
-        try {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
             action.accept(session);
             tx.commit();
@@ -79,34 +77,6 @@ public class HibernateUtil {
             e.printStackTrace();
         }
     }
-
-    // execute with result
-    public static <T> T executeWithResult(Function<Session, T> function) {
-        Transaction tx = null;
-        Session session = SessionManager.getSession(); // Current user's session
-
-        try {
-            tx = session.beginTransaction();
-            T result = function.apply(session);
-            tx.commit();
-            return result;
-        } catch (Exception e) {
-            if (tx != null) tx.rollback();
-            throw new RuntimeException(e);
-        }
-    }*/
-public static void executeInsideTransaction(Consumer<Session> action) {
-    Transaction tx = null;
-    try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-        tx = session.beginTransaction();
-        action.accept(session);
-        tx.commit();
-    } catch (Exception e) {
-        if (tx != null)
-            tx.rollback();
-        e.printStackTrace();
-    }
-}
 
     public static <T> T executeWithResult(Function<Session, T> function) {
         Transaction tx = null;

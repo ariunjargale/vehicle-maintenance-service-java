@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="ca.humber.controller.AppointmentFormController"
+      alignment="CENTER" spacing="15" prefWidth="500" prefHeight="550">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Appointment Information" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+
+    <GridPane hgap="10" vgap="10">
+        <padding>
+            <Insets top="10" right="0" bottom="10" left="0"/>
+        </padding>
+
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="150.0"/>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="250.0"/>
+        </columnConstraints>
+
+        <!-- Customer -->
+        <Label text="Customer:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="customerComboBox" prefWidth="250" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <!-- Vehicle -->
+        <Label text="Vehicle:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="vehicleComboBox" prefWidth="250" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <!-- Service -->
+        <Label text="Service:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="serviceComboBox" prefWidth="250" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <!-- Mechanic -->
+        <Label text="Mechanic:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="mechanicComboBox" prefWidth="250" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <!-- Date -->
+        <Label text="Date:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <DatePicker fx:id="appointmentDatePicker" prefWidth="250" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+        <!-- Time -->
+        <Label text="Time:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="appointmentTimeComboBox" prefWidth="250" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+        <!-- Status -->
+        <Label text="Status:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="statusComboBox" prefWidth="250" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <HBox alignment="CENTER" spacing="20">
+        <Button fx:id="saveButton" text="Save" prefWidth="100" prefHeight="35" 
+                style="-fx-background-color: #27ae60;" textFill="WHITE" onAction="#handleSave"/>
+        <Button fx:id="cancelButton" text="Cancel" prefWidth="100" prefHeight="35" 
+                style="-fx-background-color: #95a5a6;" textFill="WHITE" onAction="#handleCancel"/>
+    </HBox>
+</VBox>

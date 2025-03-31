@@ -11,7 +11,7 @@ import java.util.List;
 
 public class CustomerDAO {
     
-    // 獲取所有活動客戶
+    // Get all active customers
     public static List<Customer> getActiveCustomers() {
         return HibernateUtil.executeWithResult(session -> {
             Query<Customer> query = session.createQuery("FROM Customer WHERE isActive = true", Customer.class);
@@ -19,7 +19,7 @@ public class CustomerDAO {
         });
     }
     
-    // 獲取所有客戶（包括不活動的）
+    // Get all customers (including inactive ones)
     public static List<Customer> getAllCustomers() {
         return HibernateUtil.executeWithResult(session -> {
             Query<Customer> query = session.createQuery("FROM Customer", Customer.class);
@@ -27,12 +27,12 @@ public class CustomerDAO {
         });
     }
     
-    // 根據ID獲取客戶
+    // Get customer by ID
     public static Customer getCustomerById(int id) {
         return HibernateUtil.executeWithResult(session -> session.get(Customer.class, id));
     }
     
-    // 根據搜索條件查找客戶
+    // Search customers by search term
     public static List<Customer> searchCustomers(String searchTerm) {
         return HibernateUtil.executeWithResult(session -> {
             String searchPattern = "%" + searchTerm.toLowerCase() + "%";
@@ -45,13 +45,13 @@ public class CustomerDAO {
         });
     }
     
-    // 新增客戶
+    // Add a new customer
     public static void insertCustomer(Customer customer) {
         HibernateUtil.executeInsideTransaction(session -> session.save(customer));
         System.out.println("Customer added successfully.");
     }
     
-    // 更新客戶
+    // Update customer
     public static boolean updateCustomer(Customer customer) {
         try {
             HibernateUtil.executeInsideTransaction(session -> session.update(customer));
@@ -63,7 +63,7 @@ public class CustomerDAO {
         }
     }
     
-    // 軟刪除客戶（將狀態設置為非活動）
+    // Soft delete customer (set status to inactive)
     public static boolean deleteCustomer(int customerId) throws ConstraintException {
         Customer customer = HibernateUtil.executeWithResult(session -> session.get(Customer.class, customerId));
         
@@ -72,14 +72,14 @@ public class CustomerDAO {
             return false;
         }
         
-        // 檢查客戶是否有關聯的車輛
+        // Check if the customer has associated vehicles
         List<Vehicle> vehicles = VehicleDAOold.getVehiclesByCustomerId(customerId);
         if (!vehicles.isEmpty()) {
             throw new ConstraintException("Cannot delete customer. Customer has " + vehicles.size() + " vehicles registered. Please delete or transfer vehicles first.");
         }
         
         try {
-            // 軟刪除 - 只將狀態設為非活動
+            // Soft delete - only set status to inactive
             customer.setIsActive(false);
             HibernateUtil.executeInsideTransaction(session -> session.update(customer));
             System.out.println("Customer deactivated successfully.");
@@ -90,7 +90,7 @@ public class CustomerDAO {
         }
     }
     
-    // 硬刪除客戶（從資料庫中永久移除）- 謹慎使用
+    // Hard delete customer (permanently remove from database) - use with caution
     public static boolean hardDeleteCustomer(int customerId) throws ConstraintException {
         Customer customer = HibernateUtil.executeWithResult(session -> session.get(Customer.class, customerId));
         
@@ -99,7 +99,7 @@ public class CustomerDAO {
             return false;
         }
         
-        // 檢查客戶是否有關聯的車輛
+        // Check if the customer has associated vehicles
         List<Vehicle> vehicles = VehicleDAOold.getVehiclesByCustomerId(customerId);
         if (!vehicles.isEmpty()) {
             throw new ConstraintException("Cannot delete customer. Customer has " + vehicles.size() + " vehicles registered. Please delete or transfer vehicles first.");
@@ -117,22 +117,22 @@ public class CustomerDAO {
         }
     }
     
-    // 創建測試數據 - 僅用於測試目的
+    // Create test data - for testing purposes only
     public static void createTestCustomers() {
         try {
-            // 檢查是否已有客戶數據
+            // Check if customer data already exists
             List<Customer> existingCustomers = getAllCustomers();
             if (!existingCustomers.isEmpty()) {
                 System.out.println("Test customers already exist, skipping creation.");
                 return;
             }
             
-            // 創建幾個測試客戶
-            Customer c1 = new Customer("王大明", "0912345678", "wang.daming@example.com");
-            Customer c2 = new Customer("陳小芳", "0923456789", "chen.xiaofang@example.com");
-            Customer c3 = new Customer("林志強", "0934567890", "lin.zhiqiang@example.com");
-            Customer c4 = new Customer("張美玲", "0945678901", "zhang.meiling@example.com");
-            Customer c5 = new Customer("李建國", "0956789012", "li.jianguo@example.com");
+            // Create some test customers
+            Customer c1 = new Customer("Wang Daming", "0912345678", "wang.daming@example.com");
+            Customer c2 = new Customer("Chen Xiaofang", "0923456789", "chen.xiaofang@example.com");
+            Customer c3 = new Customer("Lin Zhiqiang", "0934567890", "lin.zhiqiang@example.com");
+            Customer c4 = new Customer("Zhang Meiling", "0945678901", "zhang.meiling@example.com");
+            Customer c5 = new Customer("Li Jianguo", "0956789012", "li.jianguo@example.com");
             
             HibernateUtil.executeInsideTransaction(session -> {
                 session.save(c1);
