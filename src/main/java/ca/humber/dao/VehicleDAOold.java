@@ -12,7 +12,7 @@ public class VehicleDAOold {
     
     public static List<Vehicle> getVehiclesList() {
         // 從 executeWithResult 改為 executeWithResultTemp
-        return HibernateUtil.executeWithResultTemp(session -> {
+        return HibernateUtil.executeWithResult(session -> {
             Query<Vehicle> query = session.createQuery("FROM Vehicle WHERE isActive = true", Vehicle.class);
             return query.list();
         });
@@ -20,12 +20,12 @@ public class VehicleDAOold {
     
     public static Vehicle getVehicleById(int id) {
         // 從 executeWithResult 改為 executeWithResultTemp
-        return HibernateUtil.executeWithResultTemp(session -> session.get(Vehicle.class, id));
+        return HibernateUtil.executeWithResult(session -> session.get(Vehicle.class, id));
     }
     
     public static List<Vehicle> getVehiclesByCustomerId(int customerId) {
         // 從 executeWithResult 改為 executeWithResultTemp
-        return HibernateUtil.executeWithResultTemp(session -> {
+        return HibernateUtil.executeWithResult(session -> {
             Query<Vehicle> query = session.createQuery(
                 "FROM Vehicle v WHERE v.customer.customerId = :customerId AND v.isActive = true", 
                 Vehicle.class);

@@ -15,7 +15,7 @@ public class VehicleDAO {
     // Get a list of all active vehicles
     public static List<Vehicle> getVehiclesList() {
         try {
-            return HibernateUtil.executeWithResultTemp(session -> {
+            return HibernateUtil.executeWithResult(session -> {
                 // 首先嘗試使用包函數
                 try {
                     List<Vehicle> vehicles = new ArrayList<>();
@@ -53,7 +53,7 @@ public class VehicleDAO {
     // Get a single vehicle by ID
     public static Vehicle getVehicleById(int id) {
         try {
-            return HibernateUtil.executeWithResultTemp(session -> {
+            return HibernateUtil.executeWithResult(session -> {
                 // First, attempt to use the package function
                 try {
                     final Vehicle[] vehicle = { null };
@@ -91,7 +91,7 @@ public class VehicleDAO {
     // Get a list of vehicles by customer ID
     public static List<Vehicle> getVehiclesByCustomerId(int customerId) {
         try {
-            return HibernateUtil.executeWithResultTemp(session -> {
+            return HibernateUtil.executeWithResult(session -> {
                 // 首先嘗試使用包函數
                 try {
                     List<Vehicle> vehicles = new ArrayList<>();

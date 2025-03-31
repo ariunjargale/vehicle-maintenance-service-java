@@ -14,7 +14,7 @@ public class CustomerDAO {
     // Get all active customers
     public static List<Customer> getActiveCustomers() {
         // 從 executeWithResult 改為 executeWithResultTemp
-        return HibernateUtil.executeWithResultTemp(session -> {
+        return HibernateUtil.executeWithResult(session -> {
             Query<Customer> query = session.createQuery("FROM Customer WHERE isActive = true ORDER BY name", Customer.class);
             return query.list();
         });
