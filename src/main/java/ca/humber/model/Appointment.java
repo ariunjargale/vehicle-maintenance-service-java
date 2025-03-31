@@ -29,7 +29,7 @@ public class Appointment {
     private Mechanic mechanic;
 
     @Column(name = "APPOINTMENT_DATE", nullable = false)
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date appointmentDate;
 
     @Column(name = "STATUS_ID", nullable = false, columnDefinition = "CHAR(1 BYTE)")

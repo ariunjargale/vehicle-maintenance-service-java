@@ -15,22 +15,33 @@ public class VehicleDAO {
     // Get a list of all active vehicles
     public static List<Vehicle> getVehiclesList() {
         try {
-            return HibernateUtil.callFunction(conn -> {
-                List<Vehicle> vehicles = new ArrayList<>();
-                try (CallableStatement stmt = conn
-                        .prepareCall("{ ? = call vehicle_pkg.fn_get_all_active_vehicles() }")) {
-                    stmt.registerOutParameter(1, Types.REF_CURSOR);
-                    stmt.execute();
+            return HibernateUtil.executeWithResultTemp(session -> {
+                // 首先嘗試使用包函數
+                try {
+                    List<Vehicle> vehicles = new ArrayList<>();
+                    session.doWork(connection -> {
+                        try (CallableStatement stmt = connection
+                                .prepareCall("{ ? = call vehicle_pkg.fn_get_all_active_vehicles() }")) {
+                            stmt.registerOutParameter(1, Types.REF_CURSOR);
+                            stmt.execute();
 
-                    try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
-                        while (rs.next()) {
-                            vehicles.add(createVehicleFromResultSet(rs));
+                            try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+                                while (rs.next()) {
+                                    vehicles.add(createVehicleFromResultSet(rs));
+                                }
+                            }
+                        } catch (SQLException e) {
+                            System.err.println("Error calling package: " + e.getMessage());
+                            throw new RuntimeException("Failed to get vehicles list", e);
                         }
-                    }
-                } catch (SQLException e) {
-                    handlePackageError(e, "fn_get_all_active_vehicles");
+                    });
+                    return vehicles;
+                } catch (Exception e) {
+                    // If the package call fails, fall back to a direct HQL query
+                    System.err.println("Package call failed, using direct query: " + e.getMessage());
+                    return session.createQuery("FROM Vehicle v LEFT JOIN FETCH v.customer WHERE v.isActive = true",
+                            Vehicle.class).list();
                 }
-                return vehicles;
             });
         } catch (Exception e) {
             System.err.println("Failed to get vehicles list: " + e.getMessage());
@@ -42,22 +53,33 @@ public class VehicleDAO {
     // Get a single vehicle by ID
     public static Vehicle getVehicleById(int id) {
         try {
-            return HibernateUtil.callFunction(conn -> {
-                Vehicle vehicle = null;
-                try (CallableStatement stmt = conn.prepareCall("{ ? = call vehicle_pkg.fn_get_vehicle_by_id(?) }")) {
-                    stmt.registerOutParameter(1, Types.REF_CURSOR);
-                    stmt.setInt(2, id);
-                    stmt.execute();
+            return HibernateUtil.executeWithResultTemp(session -> {
+                // First, attempt to use the package function
+                try {
+                    final Vehicle[] vehicle = { null };
+                    session.doWork(connection -> {
+                        try (CallableStatement stmt = connection
+                                .prepareCall("{ ? = call vehicle_pkg.fn_get_vehicle_by_id(?) }")) {
+                            stmt.registerOutParameter(1, Types.REF_CURSOR);
+                            stmt.setInt(2, id);
+                            stmt.execute();
 
-                    try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
-                        if (rs.next()) {
-                            vehicle = createVehicleFromResultSet(rs);
+                            try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+                                if (rs.next()) {
+                                    vehicle[0] = createVehicleFromResultSet(rs);
+                                }
+                            }
+                        } catch (SQLException e) {
+                            System.err.println("Error calling package: " + e.getMessage());
+                            throw new RuntimeException("Failed to get vehicle by ID", e);
                         }
-                    }
-                } catch (SQLException e) {
-                    handlePackageError(e, "fn_get_vehicle_by_id");
+                    });
+                    return vehicle[0];
+                } catch (Exception e) {
+                    // If the package call fails, fall back to a direct query
+                    System.err.println("Package call failed, using direct query: " + e.getMessage());
+                    return session.get(Vehicle.class, id);
                 }
-                return vehicle;
             });
         } catch (Exception e) {
             System.err.println("Failed to get vehicle by ID: " + e.getMessage());
@@ -69,27 +91,42 @@ public class VehicleDAO {
     // Get a list of vehicles by customer ID
     public static List<Vehicle> getVehiclesByCustomerId(int customerId) {
         try {
-            return HibernateUtil.callFunction(conn -> {
-                List<Vehicle> vehicles = new ArrayList<>();
-                try (CallableStatement stmt = conn.prepareCall("{ ? = call vehicle_pkg.fn_get_vehicles_by_customer(?) }")) {
-                    stmt.registerOutParameter(1, Types.REF_CURSOR);
-                    stmt.setInt(2, customerId);
-                    stmt.execute();
+            return HibernateUtil.executeWithResultTemp(session -> {
+                // 首先嘗試使用包函數
+                try {
+                    List<Vehicle> vehicles = new ArrayList<>();
+                    session.doWork(connection -> {
+                        try (CallableStatement stmt = connection
+                                .prepareCall("{ ? = call vehicle_pkg.fn_get_vehicles_by_customer(?) }")) {
+                            stmt.registerOutParameter(1, Types.REF_CURSOR);
+                            stmt.setInt(2, customerId);
+                            stmt.execute();
 
-                    try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
-                        while (rs.next()) {
-                            vehicles.add(createVehicleFromResultSet(rs));
+                            try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+                                while (rs.next()) {
+                                    vehicles.add(createVehicleFromResultSet(rs));
+                                }
+                            }
+                        } catch (SQLException e) {
+                            System.err.println("Error calling package: " + e.getMessage());
+                            throw new RuntimeException("Failed to get vehicles by customer ID", e);
                         }
-                    }
-                } catch (SQLException e) {
-                    handlePackageError(e, "fn_get_vehicles_by_customer");
+                    });
+                    return vehicles;
+                } catch (Exception e) {
+                    // 如果包調用失敗，回退到直接 HQL 查詢
+                    System.err.println("Package call failed, using direct query: " + e.getMessage());
+                    return session.createQuery(
+                            "FROM Vehicle v WHERE v.customer.customerId = :customerId AND v.isActive = true",
+                            Vehicle.class)
+                            .setParameter("customerId", customerId)
+                            .list();
                 }
-                return vehicles;
             });
         } catch (Exception e) {
             System.err.println("Failed to get vehicles by customer ID: " + e.getMessage());
             e.printStackTrace();
-            return new ArrayList<>(); // 返回空列表而非 null
+            return new ArrayList<>();
         }
     }
 

@@ -61,9 +61,9 @@ public class AppointmentFormController implements Initializable {
         appointmentTimeComboBox.setValue("09:00");
 
         // Set status options
-        String[] statuses = { "Pending", "In Progress", "Completed", "Cancelled" };
+        String[] statuses = { "Scheduled", "In Progress", "Completed", "Cancelled" };
         statusComboBox.setItems(FXCollections.observableArrayList(statuses));
-        statusComboBox.setValue("Pending");
+        statusComboBox.setValue("Scheduled");
 
         // Configure the display format of combo boxes
         setupComboBoxes();
@@ -210,8 +210,18 @@ public class AppointmentFormController implements Initializable {
     // Load vehicles for a specific customer
     private void loadVehicles(int customerId) {
         try {
+            System.out.println("Loading vehicles for customer ID: " + customerId);
+            // Use the updated VehicleDAO
             List<Vehicle> vehicles = VehicleDAO.getVehiclesByCustomerId(customerId);
+
+            System.out.println("Found " + vehicles.size() + " vehicles.");
+            for (Vehicle v : vehicles) {
+                System.out.println(
+                        "  - " + v.getVehicleId() + ": " + v.getYear() + " " + v.getMake() + " " + v.getModel());
+            }
+
             vehicleComboBox.setItems(FXCollections.observableArrayList(vehicles));
+
             // Automatically select if there is only one vehicle
             if (vehicles.size() == 1) {
                 vehicleComboBox.setValue(vehicles.get(0));
@@ -343,7 +353,7 @@ public class AppointmentFormController implements Initializable {
         String statusId = appointment.getStatusId();
         if (statusId != null) {
             switch (statusId) {
-                case "S":  
+                case "S":
                     statusComboBox.setValue("Scheduled");
                     break;
                 case "I":
@@ -396,7 +406,7 @@ public class AppointmentFormController implements Initializable {
                     statusId = "X";
                     break;
                 default:
-                    statusId = "S";  
+                    statusId = "S";
             }
 
             // Combine date and time
@@ -405,13 +415,22 @@ public class AppointmentFormController implements Initializable {
             int minute = Integer.parseInt(timeParts[1]);
 
             java.util.Calendar calendar = java.util.Calendar.getInstance();
-            calendar.set(selectedDate.getYear(), selectedDate.getMonthValue() - 1, selectedDate.getDayOfMonth(), hour, minute, 0);
+            calendar.set(selectedDate.getYear(), selectedDate.getMonthValue() - 1, selectedDate.getDayOfMonth(), hour,
+                    minute, 0);
             Date appointmentDateTime = calendar.getTime();
+
+            // Check for time conflicts
+            Integer currentAppointmentId = "edit".equals(mode) ? existingAppointment.getAppointmentId() : null;
+            if (AppointmentDAO.isTimeColliding(appointmentDateTime, currentAppointmentId)) {
+                AlertDialog.showWarning("Time Conflict",
+                        "The selected time slot is already fully booked. Please select another time.");
+                return;
+            }
 
             boolean success;
 
             if ("add".equals(mode)) {
-                // Create a new appointment
+                // Create new appointment
                 Appointment newAppointment = new Appointment(
                         selectedCustomer,
                         selectedVehicle,
@@ -445,7 +464,7 @@ public class AppointmentFormController implements Initializable {
                 }
             }
 
-            // Close the form and refresh the list
+            // Close form and refresh list
             if (parentController != null) {
                 parentController.refreshAppointments();
             }

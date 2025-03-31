@@ -84,7 +84,7 @@ public class AppointmentsTabController implements Initializable {
                 if (empty || vehicle == null) {
                     setText(null);
                 } else {
-                    setText(vehicle.getMake() + " " + vehicle.getModel());
+                    setText(vehicle.getYear() + " " + vehicle.getMake() + " " + vehicle.getModel());
                 }
             }
         });

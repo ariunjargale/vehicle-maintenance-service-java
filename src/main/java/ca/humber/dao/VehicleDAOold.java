@@ -11,18 +11,21 @@ import java.util.List;
 public class VehicleDAOold {
     
     public static List<Vehicle> getVehiclesList() {
-        return HibernateUtil.executeWithResult(session -> {
+        // 從 executeWithResult 改為 executeWithResultTemp
+        return HibernateUtil.executeWithResultTemp(session -> {
             Query<Vehicle> query = session.createQuery("FROM Vehicle WHERE isActive = true", Vehicle.class);
             return query.list();
         });
     }
     
     public static Vehicle getVehicleById(int id) {
-        return HibernateUtil.executeWithResult(session -> session.get(Vehicle.class, id));
+        // 從 executeWithResult 改為 executeWithResultTemp
+        return HibernateUtil.executeWithResultTemp(session -> session.get(Vehicle.class, id));
     }
     
     public static List<Vehicle> getVehiclesByCustomerId(int customerId) {
-        return HibernateUtil.executeWithResult(session -> {
+        // 從 executeWithResult 改為 executeWithResultTemp
+        return HibernateUtil.executeWithResultTemp(session -> {
             Query<Vehicle> query = session.createQuery(
                 "FROM Vehicle v WHERE v.customer.customerId = :customerId AND v.isActive = true", 
                 Vehicle.class);

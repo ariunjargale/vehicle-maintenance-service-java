@@ -13,8 +13,9 @@ public class CustomerDAO {
     
     // Get all active customers
     public static List<Customer> getActiveCustomers() {
-        return HibernateUtil.executeWithResult(session -> {
-            Query<Customer> query = session.createQuery("FROM Customer WHERE isActive = true", Customer.class);
+        // 從 executeWithResult 改為 executeWithResultTemp
+        return HibernateUtil.executeWithResultTemp(session -> {
+            Query<Customer> query = session.createQuery("FROM Customer WHERE isActive = true ORDER BY name", Customer.class);
             return query.list();
         });
     }
@@ -73,7 +74,7 @@ public class CustomerDAO {
         }
         
         // Check if the customer has associated vehicles
-        List<Vehicle> vehicles = VehicleDAOold.getVehiclesByCustomerId(customerId);
+        List<Vehicle> vehicles = VehicleDAO.getVehiclesByCustomerId(customerId);
         if (!vehicles.isEmpty()) {
             throw new ConstraintException("Cannot delete customer. Customer has " + vehicles.size() + " vehicles registered. Please delete or transfer vehicles first.");
         }
@@ -100,7 +101,7 @@ public class CustomerDAO {
         }
         
         // Check if the customer has associated vehicles
-        List<Vehicle> vehicles = VehicleDAOold.getVehiclesByCustomerId(customerId);
+        List<Vehicle> vehicles = VehicleDAO.getVehiclesByCustomerId(customerId);
         if (!vehicles.isEmpty()) {
             throw new ConstraintException("Cannot delete customer. Customer has " + vehicles.size() + " vehicles registered. Please delete or transfer vehicles first.");
         }

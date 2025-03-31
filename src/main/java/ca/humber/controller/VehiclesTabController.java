@@ -1,6 +1,6 @@
 package ca.humber.controller;
 
-import ca.humber.dao.VehicleDAOold;
+import ca.humber.dao.VehicleDAO;
 import ca.humber.exceptions.ConstraintException;
 import ca.humber.model.Vehicle;
 import ca.humber.model.Customer;
@@ -77,7 +77,7 @@ public class VehiclesTabController implements Initializable {
     // Load all vehicles
     private void loadVehicles() {
         try {
-            List<Vehicle> vehicles = VehicleDAOold.getVehiclesList();
+            List<Vehicle> vehicles = VehicleDAO.getVehiclesList();
             vehicleList.clear();
             vehicleList.addAll(vehicles);
             vehicleTable.setItems(vehicleList);
@@ -97,7 +97,7 @@ public class VehiclesTabController implements Initializable {
         }
 
         try {
-            List<Vehicle> searchResults = VehicleDAOold.searchVehicles(searchTerm);
+            List<Vehicle> searchResults = VehicleDAO.searchVehicles(searchTerm);
             vehicleList.clear();
             vehicleList.addAll(searchResults);
             vehicleTable.setItems(vehicleList);
@@ -182,7 +182,7 @@ public class VehiclesTabController implements Initializable {
 
         if (confirm) {
             try {
-                boolean success = VehicleDAOold.deleteVehicle(selectedVehicle.getVehicleId());
+                boolean success = VehicleDAO.deleteVehicle(selectedVehicle.getVehicleId());
                 if (success) {
                     AlertDialog.showSuccess("Success", "Vehicle successfully deleted (marked as inactive)");
                     loadVehicles();  // Reload data

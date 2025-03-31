@@ -108,6 +108,19 @@ public class Vehicle {
 
     @Override
     public String toString() {
-        return year + " " + make + " " + model + " (VIN: " + vin + ")";
+        StringBuilder sb = new StringBuilder();
+        if (year != null) {
+            sb.append(year).append(" ");
+        }
+        if (make != null) {
+            sb.append(make).append(" ");
+        }
+        if (model != null) {
+            sb.append(model);
+        }
+        if (vin != null && !vin.isEmpty()) {
+            sb.append(" (").append(vin).append(")");
+        }
+        return sb.toString().trim();
     }
 }

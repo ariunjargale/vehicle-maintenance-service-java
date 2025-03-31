@@ -227,11 +227,11 @@ public class AppointmentDAO {
             Date endDate = cal.getTime();
 
             // Query the booked slots and their count for the date
-            String hql = "SELECT HOUR(a.appointmentDate), COUNT(a) " +
+            String hql = "SELECT EXTRACT(HOUR FROM a.appointmentDate), COUNT(a) " +
                     "FROM Appointment a " +
                     "WHERE a.appointmentDate BETWEEN :startDate AND :endDate " +
                     "AND a.isActive = true " +
-                    "GROUP BY HOUR(a.appointmentDate)";
+                    "GROUP BY EXTRACT(HOUR FROM a.appointmentDate)";
 
             Query<Object[]> query = session.createQuery(hql, Object[].class);
             query.setParameter("startDate", startDate);
@@ -361,6 +361,61 @@ public class AppointmentDAO {
             }
             e.printStackTrace();
             return false;
+        }
+    }
+
+    /**
+     * Check if the specified appointment time conflicts with existing appointments.
+     *
+     * @param appointmentDate      The appointment time to check.
+     * @param currentAppointmentId The current appointment ID (used for editing,
+     *                             pass null for new appointments).
+     * @return True if there is a conflict, false otherwise.
+     */
+    public static boolean isTimeColliding(Date appointmentDate, Integer currentAppointmentId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Set the allowed appointment duration (in minutes)
+            final int APPOINTMENT_DURATION_MINUTES = 60;
+
+            // Create the time range to check (30 minutes before and after the appointment
+            // time)
+            Calendar startCal = Calendar.getInstance();
+            startCal.setTime(appointmentDate);
+            startCal.add(Calendar.MINUTE, -APPOINTMENT_DURATION_MINUTES / 2);
+            Date startTime = startCal.getTime();
+
+            Calendar endCal = Calendar.getInstance();
+            endCal.setTime(appointmentDate);
+            endCal.add(Calendar.MINUTE, APPOINTMENT_DURATION_MINUTES / 2);
+            Date endTime = endCal.getTime();
+
+            // Create the query
+            String hql = "SELECT COUNT(a) FROM Appointment a " +
+                    "WHERE a.isActive = true " +
+                    "AND a.appointmentDate BETWEEN :startTime AND :endTime";
+
+            // Exclude the current appointment if editing an existing one
+            if (currentAppointmentId != null) {
+                hql += " AND a.appointmentId != :appointmentId";
+            }
+
+            Query<Long> query = session.createQuery(hql, Long.class);
+            query.setParameter("startTime", startTime);
+            query.setParameter("endTime", endTime);
+
+            if (currentAppointmentId != null) {
+                query.setParameter("appointmentId", currentAppointmentId);
+            }
+
+            Long count = query.uniqueResult();
+
+            // Check if the time slot has reached the maximum number of appointments (assume
+            // max 3 per slot)
+            return count >= 3;
+        } catch (Exception e) {
+            System.err.println("Error checking time collision: " + e.getMessage());
+            e.printStackTrace();
+            return false; // Default to no conflict on error, but log the error
         }
     }
 }
