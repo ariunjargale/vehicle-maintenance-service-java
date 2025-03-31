@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Menu;
 import javafx.scene.control.TabPane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -25,8 +26,19 @@ public class DashboardController {
 
     @FXML
     private void handleUserManagement() {
-        System.out.println("Navigating to user management...");
-        // loadFXML("user_management.fxml");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/users.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("User Management");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML

@@ -1,14 +1,19 @@
 package ca.humber.service;
 
 import ca.humber.dao.UsersDao;
+import ca.humber.model.RolePermission;
 import ca.humber.model.Users;
 import ca.humber.util.HibernateUtil;
 import ca.humber.util.PasswordUtil;
 import ca.humber.util.SessionManager;
+import oracle.jdbc.OracleTypes;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import java.sql.CallableStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AuthService {
 
@@ -28,17 +33,10 @@ public class AuthService {
                 throw new RuntimeException("Invalid credentials.");
             }
 
-        // TODO: Ari
-            // Set Oracle DB session context
-        /*    CallableStatement stmt = session
-                    .doReturningWork(conn -> conn.prepareCall("BEGIN DBMS_SESSION.SET_CONTEXT('APP_CTX', 'USER_ID', ?); END;"));
-            stmt.setInt(1, user.getUserId());
-            stmt.execute();
-
-            tx.commit();*/
+            List<RolePermission> rolePermissions = UsersDao.getRolePermissions(user.getUserRole().getRoleId(), session);
 
             // Save to app session
-            SessionManager.login(session, user);
+            SessionManager.login(session, user, rolePermissions);
 
         } catch (Exception e) {
             if (tx != null) tx.rollback();
@@ -50,5 +48,7 @@ public class AuthService {
     public void logout() {
         SessionManager.logout();
     }
+
+
 
 }
