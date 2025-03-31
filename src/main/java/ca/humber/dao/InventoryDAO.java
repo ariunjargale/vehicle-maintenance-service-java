@@ -104,7 +104,7 @@ public class InventoryDAO {
     }
 
     public static int getInventoryCount() {
-        return HibernateUtil.callSingleResultFunction(conn -> {
+        return HibernateUtil.callFunction(conn -> {
             try (CallableStatement stmt = conn.prepareCall("{ ? = call inventory_pkg.fn_get_inventory_count() }")) {
                 stmt.registerOutParameter(1, Types.INTEGER);
                 stmt.execute();

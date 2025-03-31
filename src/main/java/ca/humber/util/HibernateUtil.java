@@ -72,24 +72,6 @@ public class HibernateUtil {
         }
     }
 
-    public static <T> T callSingleResultFunction(Function<Connection, T> caller) {
-        Session session = SessionManager.getSession();
-        synchronized (sessionLock) {
-            Transaction tx = session.getTransaction();
-            try {
-                if (tx == null || !tx.isActive()) {
-                    tx = session.beginTransaction();
-                }
-                T result = session.doReturningWork(caller::apply);
-                tx.commit();
-                return result;
-            } catch (Exception e) {
-                if (tx != null && tx.isActive()) tx.rollback();
-                throw new RuntimeException("Failed to call single-result function", e);
-            }
-        }
-    }
-
     public static <T> List<T> callResultListFunction(Function<Connection, List<T>> caller) {
         Session session = SessionManager.getSession();
         synchronized (sessionLock) {
