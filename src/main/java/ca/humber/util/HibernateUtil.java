@@ -7,6 +7,7 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 
 import java.sql.Connection;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -35,109 +36,125 @@ public class HibernateUtil {
         return sessionFactory;
     }
 
-    /**
-     * Execute a stored procedure without returning a result.
-     * @param caller Logic for calling the stored procedure.
-     */
+
     public static void callProcedure(Consumer<Connection> caller) {
-        Session session = null;
-        Transaction transaction = null;
-        
+        Session session = SessionManager.getSession();
+        Transaction tx = null;
+
         try {
-            session = sessionFactory.openSession();
-            transaction = session.beginTransaction();
+            tx = session.beginTransaction();
             session.doWork(caller::accept);
-            transaction.commit();
+            tx.commit();
         } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
+            if (tx != null) tx.rollback();
             throw new RuntimeException("Failed to call procedure", e);
-        } finally {
-            if (session != null && session.isOpen()) {
-                session.close();
-            }
         }
     }
 
-    /**
-     * Execute a stored function and return a result.
-     * @param <T> The return type.
-     * @param caller Logic for calling the stored function.
-     * @return The result of the function execution.
-     */
     public static <T> T callFunction(Function<Connection, T> caller) {
-        Session session = null;
-        Transaction transaction = null;
-        
+        Session session = SessionManager.getSession();
+        Transaction tx = null;
+
         try {
-            session = sessionFactory.openSession();
-            transaction = session.beginTransaction();
+            tx = session.beginTransaction();
             T result = session.doReturningWork(caller::apply);
-            transaction.commit();
+            tx.commit();
             return result;
         } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
+            if (tx != null) tx.rollback();
             throw new RuntimeException("Failed to call function", e);
-        } finally {
-            if (session != null && session.isOpen()) {
-                session.close();
-            }
         }
     }
 
-    /**
-     * Execute an operation inside a transaction without returning a result.
-     * @param action The operation to execute.
-     */
-    public static void executeInsideTransaction(Consumer<Session> action) {
-        Session session = null;
-        Transaction transaction = null;
-        
-        try {
-            session = sessionFactory.openSession();
-            transaction = session.beginTransaction();
-            action.accept(session);
-            transaction.commit();
-        } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw new RuntimeException("Failed to execute action inside transaction", e);
-        } finally {
-            if (session != null && session.isOpen()) {
-                session.close();
-            }
-        }
-    }
+    // Call this if you need function with single result
+    public static <T> T callSingleResultFunction(Function<Connection, T> caller) {
+        Session session = SessionManager.getSession();
+        Transaction tx = null;
 
-    /**
-     * Execute an operation inside a transaction and return a result.
-     * @param <T> The return type.
-     * @param function The function to execute.
-     * @return The result of the function execution.
-     */
-    public static <T> T executeWithResult(Function<Session, T> function) {
-        Session session = null;
-        Transaction transaction = null;
-        
         try {
-            session = sessionFactory.openSession();
-            transaction = session.beginTransaction();
-            T result = function.apply(session);
-            transaction.commit();
+            tx = session.beginTransaction();
+            T result = session.doReturningWork(caller::apply);
+            tx.commit();
             return result;
         } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw new RuntimeException("Failed to execute function with result", e);
-        } finally {
-            if (session != null && session.isOpen()) {
-                session.close();
-            }
+            if (tx != null) tx.rollback();
+            throw new RuntimeException("Failed to call single-result function", e);
+        }
+    }
+
+    // Call this if you need function with collection/table result
+    public static <T> List<T> callResultListFunction(Function<Connection, List<T>> caller) {
+        Session session = SessionManager.getSession();
+        Transaction tx = null;
+
+        try {
+            tx = session.beginTransaction();
+            List<T> result = session.doReturningWork(caller::apply);
+            tx.commit();
+            return result;
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw new RuntimeException("Failed to call result list function", e);
+        }
+    }
+
+    // execute without result
+    public static void executeInsideTransaction(Consumer<Session> action) {
+        Transaction tx = null;
+        Session session = SessionManager.getSession(); // Current user's session
+
+        try {
+            tx = session.beginTransaction();
+            action.accept(session);
+            tx.commit();
+        } catch (Exception e) {
+            if (tx != null)
+                tx.rollback();
+            e.printStackTrace();
+        }
+    }
+
+    // execute with result
+    public static <T> T executeWithResult(Function<Session, T> function) {
+        Transaction tx = null;
+        Session session = SessionManager.getSession(); // Current user's session
+
+        try {
+            tx = session.beginTransaction();
+            T result = function.apply(session);
+            tx.commit();
+            return result;
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw new RuntimeException(e);
+        }
+    }
+
+    // It'll be removed
+    public static void executeInsideTransactionTemp(Consumer<Session> action) {
+        Transaction tx = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
+            action.accept(session);
+            tx.commit();
+        } catch (Exception e) {
+            if (tx != null)
+                tx.rollback();
+            e.printStackTrace();
+        }
+    }
+    
+    // It'll be removed
+    public static <T> T executeWithResultTemp(Function<Session, T> function) {
+        Transaction tx = null;
+        try (Session session = getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
+            T result = function.apply(session);
+            tx.commit();
+            return result;
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw new RuntimeException(e);
         }
     }
 }
