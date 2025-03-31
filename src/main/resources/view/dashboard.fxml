@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
-
-<BorderPane prefHeight="400.0" prefWidth="700.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17.0.12" fx:controller="ca.humber.controller.DashboardController">
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<BorderPane prefHeight="400.0" prefWidth="700.0" xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/17.0.12" fx:controller="ca.humber.controller.DashboardController">
     <top>
         <VBox>
             <MenuBar>
@@ -12,16 +14,16 @@
                     <!-- Admin Only Menu -->
                     <Menu fx:id="adminMenu" text="Admin">
                         <items>
-                            <MenuItem onAction="#handleUserManagement" text="User Management" />
-                            <MenuItem onAction="#handleSystemSettings" text="System Settings" />
+                            <MenuItem onAction="#handleUserManagement" text="User Management"/>
+                            <MenuItem onAction="#handleSystemSettings" text="System Settings"/>
                         </items>
                     </Menu>
 
                     <!-- General Account Menu -->
                     <Menu text="Account">
                         <items>
-                            <MenuItem onAction="#handleProfileInfo" text="Profile Info" />
-                            <MenuItem onAction="#handleLogout" text="Logout" />
+                            <MenuItem onAction="#handleProfileInfo" text="Profile Info"/>
+                            <MenuItem onAction="#handleLogout" text="Logout"/>
                         </items>
                     </Menu>
                 </menus>
@@ -30,7 +32,7 @@
                 <children>
                     <Label text="Vehicle Maintenance System" textFill="WHITE">
                         <font>
-                            <Font name="System Bold" size="24.0" />
+                            <Font name="System Bold" size="24.0"/>
                         </font>
                     </Label>
                 </children>
@@ -40,24 +42,24 @@
     <center>
         <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
             <tabs>
-                <Tab text="Inventory">
-                    <content>
-                        <fx:include source="inventory_tab.fxml" />
-                    </content>
-                </Tab>
                 <Tab text="Appointments">
                     <content>
-                        <fx:include source="appointments_tab.fxml" />
-                    </content>
-                </Tab>
-                <Tab text="Vehicles">
-                    <content>
-                        <fx:include source="vehicles_tab.fxml" />
+                        <fx:include source="appointments_tab.fxml"/>
                     </content>
                 </Tab>
                 <Tab text="Customers">
                     <content>
-                        <fx:include source="customers_tab.fxml" />
+                        <fx:include source="customers_tab.fxml"/>
+                    </content>
+                </Tab>
+                <Tab text="Vehicles">
+                    <content>
+                        <fx:include source="vehicles_tab.fxml"/>
+                    </content>
+                </Tab>
+                <Tab text="Inventory">
+                    <content>
+                        <fx:include source="inventory_tab.fxml"/>
                     </content>
                 </Tab>
             </tabs>

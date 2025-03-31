@@ -2,7 +2,7 @@ CREATE OR REPLACE PACKAGE user_pkg AS
     FUNCTION login_user (
         p_username IN VARCHAR2,
         p_password IN VARCHAR2
-    ) RETURN NUMBER;
+    ) RETURN SYS_REFCURSOR;
 
     PROCEDURE reset_password (
         p_user_id      IN NUMBER,
@@ -23,6 +23,10 @@ CREATE OR REPLACE PACKAGE user_pkg AS
         p_user_id IN NUMBER
     );
 
+    FUNCTION get_role_permissions (
+        p_role_id IN NUMBER
+    ) RETURN SYS_REFCURSOR;
+
 END user_pkg;
 /
 
@@ -31,23 +35,34 @@ CREATE OR REPLACE PACKAGE BODY user_pkg AS
     FUNCTION login_user (
         p_username IN VARCHAR2,
         p_password IN VARCHAR2
-    ) RETURN NUMBER IS
+    ) RETURN SYS_REFCURSOR IS
+        v_cursor  SYS_REFCURSOR;
         v_user_id NUMBER;
     BEGIN
         SELECT
-            user_id
+            u.user_id
         INTO v_user_id
         FROM
-            users
+            users u
         WHERE
-                username = p_username
-            AND password = p_password
-            AND is_active = 1;
+                u.username = p_username
+            AND u.password = p_password
+            AND u.is_active = 1;
 
-        RETURN v_user_id;
+        dbms_session.set_context('LOGIN_CTX', 'USER_ID', v_user_id);
+        OPEN v_cursor FOR SELECT
+                                                u.user_id,
+                                                u.username,
+                                                u.role_id
+                                            FROM
+                                                users u
+                          WHERE
+                              u.user_id = v_user_id;
+
+        RETURN v_cursor;
     EXCEPTION
         WHEN no_data_found THEN
-            RETURN -1;
+            RETURN NULL;
     END;
 
     PROCEDURE reset_password (
@@ -116,5 +131,20 @@ CREATE OR REPLACE PACKAGE BODY user_pkg AS
         COMMIT;
     END;
 
+    FUNCTION get_role_permissions (
+        p_role_id IN NUMBER
+    ) RETURN SYS_REFCURSOR IS
+        v_cursor SYS_REFCURSOR;
+    BEGIN
+        OPEN v_cursor FOR SELECT
+                                                table_name,
+                                                is_read_only
+                                            FROM
+                                                role_permission
+                          WHERE
+                              role_id = p_role_id;
+
+        RETURN v_cursor;
+    END;
+
 END user_pkg;
-/

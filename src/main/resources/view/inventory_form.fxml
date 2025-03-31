@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="ca.humber.controller.InventoryFormController"
+      spacing="12" alignment="CENTER" prefWidth="450" prefHeight="400">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Inventory Item" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+    <GridPane hgap="10" vgap="10">
+        <columnConstraints>
+            <ColumnConstraints minWidth="100"/>
+            <ColumnConstraints hgrow="ALWAYS"/>
+        </columnConstraints>
+
+        <!-- Item ID (editable only in edit mode, disabled always) -->
+        <Label fx:id="labelItemId" text="Item ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="itemIdField" GridPane.rowIndex="0" GridPane.columnIndex="1" editable="false"/>
+
+        <!-- Item Name -->
+        <Label text="Item Name:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="itemNameField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <!-- Quantity -->
+        <Label text="Quantity:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextField fx:id="quantityField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <!-- Price -->
+        <Label text="Price:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextField fx:id="priceField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <Separator VBox.vgrow="ALWAYS"/>
+
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button fx:id="cancelButton" text="Cancel" onAction="#handleCancel" prefWidth="100"/>
+        <Button fx:id="saveButton" text="Save" onAction="#handleSave" defaultButton="true" prefWidth="100"/>
+    </HBox>
+</VBox>

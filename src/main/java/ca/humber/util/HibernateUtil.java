@@ -7,6 +7,7 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 
 import java.sql.Connection;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -89,7 +90,7 @@ public class HibernateUtil {
         }
     }
 
-    public static <T> java.util.List<T> callResultListFunction(Function<Connection, java.util.List<T>> caller) {
+    public static <T> List<T> callResultListFunction(Function<Connection, List<T>> caller) {
         Session session = SessionManager.getSession();
         synchronized (sessionLock) {
             Transaction tx = session.getTransaction();
@@ -97,7 +98,7 @@ public class HibernateUtil {
                 if (tx == null || !tx.isActive()) {
                     tx = session.beginTransaction();
                 }
-                java.util.List<T> result = session.doReturningWork(caller::apply);
+                List<T> result = session.doReturningWork(caller::apply);
                 tx.commit();
                 return result;
             } catch (Exception e) {

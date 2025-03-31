@@ -8,12 +8,10 @@
     <center>
         <TableView fx:id="inventoryTable" prefHeight="200.0" prefWidth="200.0">
             <columns>
-                <TableColumn fx:id="itemIdColumn" prefWidth="100.0" text="item ID" />
-                <TableColumn fx:id="itemNameColumn" prefWidth="200.0" text="item name" />
-                <TableColumn fx:id="categoryColumn" prefWidth="150.0" text="type" />
-                <TableColumn fx:id="quantityColumn" prefWidth="100.0" text="amount" />
-                <TableColumn fx:id="unitPriceColumn" prefWidth="120.0" text="unit price" />
-                <TableColumn fx:id="supplierColumn" prefWidth="200.0" text="supplyer" />
+                <TableColumn fx:id="itemIdColumn" prefWidth="100.0" text="Item ID" />
+                <TableColumn fx:id="itemNameColumn" prefWidth="200.0" text="Item name" />
+                <TableColumn fx:id="quantityColumn" prefWidth="100.0" text="Quantity" />
+                <TableColumn fx:id="unitPriceColumn" prefWidth="120.0" text="Price" />
             </columns>
             <BorderPane.margin>
                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
