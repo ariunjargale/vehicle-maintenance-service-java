@@ -5,6 +5,8 @@ module ca.humber {
     requires jakarta.persistence;
     requires java.sql;
     requires java.naming;
+    requires ojdbc8;
+    requires java.management;
 
     exports ca.humber;
     exports ca.humber.model;
