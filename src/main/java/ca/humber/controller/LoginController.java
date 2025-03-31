@@ -4,13 +4,19 @@ import ca.humber.App;
 import ca.humber.service.AuthService;
 import ca.humber.util.SessionManager;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
+
+import java.net.URL;
+import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-public class LoginController {
+public class LoginController implements Initializable {
 
     @FXML
     private TextField usernameField;
@@ -19,6 +25,21 @@ public class LoginController {
 
     private final AuthService authService = new AuthService();
     private static final int LOGIN_TIMEOUT_SECONDS = 10;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // Add Enter key event handler for the password field
+        passwordField.setOnKeyPressed(this::handleEnterKey);
+        
+        // Optionally add Enter key event handler for the username field
+        usernameField.setOnKeyPressed(this::handleEnterKey);
+    }
+    
+    private void handleEnterKey(KeyEvent event) {
+        if (event.getCode() == KeyCode.ENTER) {
+            handleLogin();
+        }
+    }
 
     @FXML
     private void handleLogin() {
