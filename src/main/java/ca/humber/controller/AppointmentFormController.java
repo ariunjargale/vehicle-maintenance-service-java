@@ -343,8 +343,8 @@ public class AppointmentFormController implements Initializable {
         String statusId = appointment.getStatusId();
         if (statusId != null) {
             switch (statusId) {
-                case "P":
-                    statusComboBox.setValue("Pending");
+                case "S":  
+                    statusComboBox.setValue("Scheduled");
                     break;
                 case "I":
                     statusComboBox.setValue("In Progress");
@@ -374,7 +374,7 @@ public class AppointmentFormController implements Initializable {
         }
 
         try {
-            // Get form data
+            // Retrieve form data
             Customer selectedCustomer = customerComboBox.getValue();
             Vehicle selectedVehicle = vehicleComboBox.getValue();
             Service selectedService = serviceComboBox.getValue();
@@ -396,7 +396,7 @@ public class AppointmentFormController implements Initializable {
                     statusId = "X";
                     break;
                 default:
-                    statusId = "P";
+                    statusId = "S";  
             }
 
             // Combine date and time
@@ -405,14 +405,13 @@ public class AppointmentFormController implements Initializable {
             int minute = Integer.parseInt(timeParts[1]);
 
             java.util.Calendar calendar = java.util.Calendar.getInstance();
-            calendar.set(selectedDate.getYear(), selectedDate.getMonthValue() - 1, selectedDate.getDayOfMonth(), hour,
-                    minute, 0);
+            calendar.set(selectedDate.getYear(), selectedDate.getMonthValue() - 1, selectedDate.getDayOfMonth(), hour, minute, 0);
             Date appointmentDateTime = calendar.getTime();
 
             boolean success;
 
             if ("add".equals(mode)) {
-                // Create new appointment
+                // Create a new appointment
                 Appointment newAppointment = new Appointment(
                         selectedCustomer,
                         selectedVehicle,
@@ -446,7 +445,7 @@ public class AppointmentFormController implements Initializable {
                 }
             }
 
-            // Close form and refresh list
+            // Close the form and refresh the list
             if (parentController != null) {
                 parentController.refreshAppointments();
             }

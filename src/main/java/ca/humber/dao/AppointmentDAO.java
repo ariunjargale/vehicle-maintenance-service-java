@@ -54,42 +54,82 @@ public class AppointmentDAO {
     // Create a new appointment
     public static boolean createAppointment(Appointment appointment) {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        Session session = null;
+
+        try {
+            session = HibernateUtil.getSessionFactory().openSession();
             transaction = session.beginTransaction();
 
-            // Ensure associated objects are properly loaded
+            // Validate foreign key relationships
             if (appointment.getCustomer() != null) {
                 Customer customer = session.get(Customer.class, appointment.getCustomer().getCustomerId());
+                if (customer == null) {
+                    throw new IllegalArgumentException("The selected customer does not exist");
+                }
                 appointment.setCustomer(customer);
+            } else {
+                throw new IllegalArgumentException("A customer must be specified");
             }
 
             if (appointment.getVehicle() != null) {
                 Vehicle vehicle = session.get(Vehicle.class, appointment.getVehicle().getVehicleId());
+                if (vehicle == null) {
+                    throw new IllegalArgumentException("The selected vehicle does not exist");
+                }
                 appointment.setVehicle(vehicle);
+            } else {
+                throw new IllegalArgumentException("A vehicle must be specified");
             }
 
             if (appointment.getService() != null) {
                 Service service = session.get(Service.class, appointment.getService().getServiceId());
+                if (service == null) {
+                    throw new IllegalArgumentException("The selected service does not exist");
+                }
                 appointment.setService(service);
+            } else {
+                throw new IllegalArgumentException("A service must be specified");
             }
 
             if (appointment.getMechanic() != null) {
                 Mechanic mechanic = session.get(Mechanic.class, appointment.getMechanic().getMechanicId());
+                if (mechanic == null) {
+                    throw new IllegalArgumentException("The selected mechanic does not exist");
+                }
                 appointment.setMechanic(mechanic);
             }
 
-            // Set as active by default
+            // Set as active
             appointment.setIsActive(true);
 
             session.save(appointment);
             transaction.commit();
             return true;
         } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
+            if (transaction != null && transaction.isActive() && session != null && session.isOpen()) {
+                try {
+                    transaction.rollback();
+                } catch (Exception rollbackEx) {
+                    System.err.println("Unable to rollback transaction: " + rollbackEx.getMessage());
+                    rollbackEx.printStackTrace();
+                }
             }
+
+            // Handle SQL errors
+            Throwable cause = e;
+            while (cause != null) {
+                if (cause.getMessage() != null && cause.getMessage().contains("ORA-02291")) {
+                    System.err.println("Foreign key constraint error: Referenced record does not exist");
+                }
+                cause = cause.getCause();
+            }
+
             e.printStackTrace();
             return false;
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
     }
 

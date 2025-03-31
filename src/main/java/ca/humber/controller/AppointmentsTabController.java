@@ -137,8 +137,8 @@ public class AppointmentsTabController implements Initializable {
                     setText(null);
                 } else {
                     switch (statusId) {
-                        case "P":
-                            setText("Pending");
+                        case "S":
+                            setText("Scheduled");
                             break;
                         case "I":
                             setText("In Progress");

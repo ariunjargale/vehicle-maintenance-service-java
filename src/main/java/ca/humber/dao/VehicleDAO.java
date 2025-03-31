@@ -68,23 +68,29 @@ public class VehicleDAO {
 
     // Get a list of vehicles by customer ID
     public static List<Vehicle> getVehiclesByCustomerId(int customerId) {
-        return HibernateUtil.callFunction(conn -> {
-            List<Vehicle> vehicles = new ArrayList<>();
-            try (CallableStatement stmt = conn.prepareCall("{ ? = call vehicle_pkg.fn_get_vehicles_by_customer(?) }")) {
-                stmt.registerOutParameter(1, Types.REF_CURSOR);
-                stmt.setInt(2, customerId);
-                stmt.execute();
+        try {
+            return HibernateUtil.callFunction(conn -> {
+                List<Vehicle> vehicles = new ArrayList<>();
+                try (CallableStatement stmt = conn.prepareCall("{ ? = call vehicle_pkg.fn_get_vehicles_by_customer(?) }")) {
+                    stmt.registerOutParameter(1, Types.REF_CURSOR);
+                    stmt.setInt(2, customerId);
+                    stmt.execute();
 
-                try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
-                    while (rs.next()) {
-                        vehicles.add(createVehicleFromResultSet(rs));
+                    try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+                        while (rs.next()) {
+                            vehicles.add(createVehicleFromResultSet(rs));
+                        }
                     }
+                } catch (SQLException e) {
+                    handlePackageError(e, "fn_get_vehicles_by_customer");
                 }
-            } catch (SQLException e) {
-                throw new RuntimeException("Error getting vehicles by customer ID: " + e.getMessage(), e);
-            }
-            return vehicles;
-        });
+                return vehicles;
+            });
+        } catch (Exception e) {
+            System.err.println("Failed to get vehicles by customer ID: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>(); // 返回空列表而非 null
+        }
     }
 
     // Search for vehicles
