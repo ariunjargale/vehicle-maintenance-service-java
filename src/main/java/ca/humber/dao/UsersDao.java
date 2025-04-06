@@ -1,146 +1,195 @@
 package ca.humber.dao;
 
-import ca.humber.exceptions.ConstraintException;
-import ca.humber.model.RolePermission;
-import ca.humber.model.UserRole;
-import ca.humber.model.Users;
-import ca.humber.util.HibernateUtil;
-import oracle.jdbc.OracleTypes;
-import org.hibernate.Session;
-import org.hibernate.exception.ConstraintViolationException;
-import org.hibernate.query.Query;
-
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.humber.model.RolePermission;
+import ca.humber.model.User;
+import ca.humber.model.UserRole;
+import ca.humber.util.HibernateUtil;
+import oracle.jdbc.OracleTypes;
+
 public class UsersDao {
 
-    public static Users login(String username, String hashedPassword, Session session) {
-        Users res = session.doReturningWork(conn -> {
-            try (CallableStatement stmt = conn.prepareCall("{ ? = call user_pkg.login_user(?, ?) }")) {
-                stmt.registerOutParameter(1, OracleTypes.CURSOR);
-                stmt.setString(2, username);
-                stmt.setString(3, hashedPassword);
-                stmt.execute();
+	public static User login(String username, String hashedPassword) {
+		return HibernateUtil.callFunction(conn -> {
+			try (CallableStatement stmt = conn.prepareCall("{ ? = call user_pkg.login(?, ?) }")) {
+				stmt.registerOutParameter(1, OracleTypes.CURSOR);
+				stmt.setString(2, username);
+				stmt.setString(3, hashedPassword);
+				stmt.execute();
 
-                try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
-                    if (rs != null && rs.next()) {
-                        Users result = new Users();
-                        result.setUserId(rs.getInt("user_id"));
-                        result.setUsername(rs.getString("username"));
+				try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+					if (rs != null && rs.next()) {
+						User result = new User();
+						result.setUserId(rs.getInt("user_id"));
+						result.setUsername(rs.getString("username"));
+						result.setRoleId(rs.getInt("user_id"));
+						return result;
+					}
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 
-                        UserRole role = new UserRole();
-                        role.setRoleId(rs.getLong("role_id"));
+			return null;
+		});
+	}
 
-                        result.setUserRole(role);
+	public static List<RolePermission> getRolePermissions(int roleId) {
+		return HibernateUtil.callResultListFunction(conn -> {
+			List<RolePermission> permissions = new ArrayList<>();
 
-                        return result;
-                    } else {
-                        return null; // login failed
-                    }
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException("Failed to call login_user function", e);
-            }
-        });
+			try (CallableStatement stmt = conn.prepareCall("{ ? = call user_pkg.get_role_permissions(?) }")) {
+				stmt.registerOutParameter(1, OracleTypes.CURSOR);
+				stmt.setLong(2, roleId);
+				stmt.execute();
 
-        return res;
-    }
+				try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+					while (rs.next()) {
+						RolePermission rp = new RolePermission();
+						rp.setTableName(rs.getString("table_name"));
+						rp.setIsReadOnly(rs.getInt("is_read_only"));
 
-    public static List<RolePermission> getRolePermissions(Long roleId, Session session) {
-        return session.doReturningWork(conn -> {
-            List<RolePermission> permissions = new ArrayList<>();
+						permissions.add(rp);
+					}
+				}
 
-            try (CallableStatement stmt = conn.prepareCall("{ ? = call user_pkg.get_role_permissions(?) }")) {
-                stmt.registerOutParameter(1, OracleTypes.CURSOR);
-                stmt.setLong(2, roleId);
-                stmt.execute();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 
-                try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
-                    while (rs.next()) {
-                        RolePermission rp = new RolePermission();
-                        rp.setTableName(rs.getString("table_name"));
-                        rp.setIsReadOnly(rs.getInt("is_read_only")); // 1 бол true
+			return permissions;
+		});
+	}
 
-                        permissions.add(rp);
-                    }
-                }
+	public static List<UserRole> getUserRoles() {
+		return HibernateUtil.callResultListFunction(conn -> {
+			List<UserRole> roles = new ArrayList<>();
 
-            } catch (SQLException e) {
-                throw new RuntimeException("Failed to call get_role_permissions", e);
-            }
+			try (CallableStatement stmt = conn.prepareCall("{ ? = call user_pkg.get_user_roles }")) {
+				stmt.registerOutParameter(1, OracleTypes.CURSOR);
+				stmt.execute();
 
-            return permissions;
-        });
-    }
+				try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+					while (rs.next()) {
+						UserRole role = new UserRole();
+						role.setRoleId(rs.getInt("role_id"));
+						role.setRoleName(rs.getString("role_name"));
+						roles.add(role);
+					}
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 
+			return roles;
+		});
+	}
 
-    public static List<Users> getUserList() {
-        return HibernateUtil.executeWithResult(session -> {
-            Query<Users> query = session.createQuery("FROM Users WHERE isActive = 1", Users.class);
-            return query.list();
-        });
-    }
+	public static List<User> getUsers() {
+		return HibernateUtil.callResultListFunction(conn -> {
+			List<User> users = new ArrayList<>();
 
-    public static List<Users> search(String searchTerm) {
-        return HibernateUtil.executeWithResult(session -> {
-            String searchPattern = "%" + searchTerm.toLowerCase() + "%";
-            Query<Users> query = session.createQuery(
-                    "FROM Users u WHERE u.isActive = 1 AND (LOWER(u.username) LIKE :searchPattern)",
-                    Users.class);
-            query.setParameter("searchPattern", searchPattern);
-            return query.list();
-        });
-    }
+			try (CallableStatement stmt = conn.prepareCall("{ ? = call user_pkg.get_users }")) {
+				stmt.registerOutParameter(1, OracleTypes.CURSOR);
+				stmt.execute();
 
-    public static List<UserRole> getRoleList() {
-        return HibernateUtil.executeWithResult(session -> {
-            Query<UserRole> query = session.createQuery("FROM UserRole", UserRole.class);
-            return query.list();
-        });
-    }
+				try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+					while (rs.next()) {
+						User user = new User();
+						user.setUserId(rs.getInt("user_id"));
+						user.setUsername(rs.getString("username"));
+						user.setRoleId(rs.getInt("role_id"));
+						user.setIsActive(rs.getInt("is_active"));
+						users.add(user);
+					}
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 
-    public static void insertUser(Users user) {
-        HibernateUtil.executeInsideTransaction(session -> session.save(user));
-        System.out.println("User added successfully.");
-    }
+			return users;
+		});
+	}
 
-    public static boolean updateUser(Users user) {
-        try {
-            HibernateUtil.executeInsideTransaction(session -> session.update(user));
-            System.out.println("User updated successfully.");
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
+	public static List<User> getUserByUsername(String username) {
+		return HibernateUtil.callResultListFunction(conn -> {
+			List<User> users = new ArrayList<>();
 
-    public static boolean deleteUser(int userId) throws ConstraintException {
-        Users users = HibernateUtil.executeWithResult(session -> session.get(Users.class, userId));
+			try (CallableStatement stmt = conn.prepareCall("{ ? = call user_pkg.get_user_by_username(?) }")) {
+				stmt.registerOutParameter(1, OracleTypes.CURSOR);
+				stmt.setString(2, username.concat("%"));
+				stmt.execute();
 
-        if (users == null) {
-            System.out.println("User with ID " + userId + " not found.");
-            return false;
-        }
+				try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+					while (rs.next()) {
+						User user = new User();
+						user.setUserId(rs.getInt("user_id"));
+						user.setUsername(rs.getString("username"));
+						user.setRoleId(rs.getInt("role_id"));
+						user.setIsActive(rs.getInt("is_active"));
+						users.add(user);
+					}
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 
-        try {
-            // Soft delete - only mark the status as inactive
-            users.setIsActive(0);
-            HibernateUtil.executeInsideTransaction(session -> session.update(users));
-            System.out.println("User deactivated successfully.");
-            return true;
-        } catch (ConstraintViolationException e) {
-            throw new ConstraintException("Cannot delete user. There are record for this user.");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
+			return users;
+		});
+	}
+
+	public static void insertUser(User user) {
+		HibernateUtil.callProcedure(conn -> {
+			try (CallableStatement stmt = conn.prepareCall("{ call user_pkg.insert_user(?, ?, ?) }")) {
+				stmt.setString(1, user.getUsername());
+				stmt.setString(2, user.getPassword());
+				stmt.setInt(3, user.getRoleId());
+				stmt.execute();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		});
+	}
+
+	public static void updateUser(User user) {
+		HibernateUtil.callProcedure(conn -> {
+			try (CallableStatement stmt = conn.prepareCall("{ call user_pkg.update_user(?, ?, ?) }")) {
+				stmt.setInt(1, user.getUserId());
+				stmt.setString(2, user.getUsername());
+				stmt.setInt(3, user.getRoleId());
+				stmt.execute();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		});
+	}
+
+	public static void resetPassword(int userId, String newPassword) {
+		HibernateUtil.callProcedure(conn -> {
+			try (CallableStatement stmt = conn.prepareCall("{ call user_pkg.reset_password(?, ?) }")) {
+				stmt.setInt(1, userId);
+				stmt.setString(2, newPassword);
+				stmt.execute();
+			} catch (SQLException e) {
+				e.printStackTrace(); // optionally log
+				throw new RuntimeException("❌ Failed to reset password", e);
+			}
+		});
+	}
+
+	public static void deactivateUser(int userId) {
+		HibernateUtil.callProcedure(conn -> {
+			try (CallableStatement stmt = conn.prepareCall("{ call user_pkg.deactivate_user(?) }")) {
+				stmt.setInt(1, userId);
+				stmt.execute();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		});
+	}
 }
-
-
-

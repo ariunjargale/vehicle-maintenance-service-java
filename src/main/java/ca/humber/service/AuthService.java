@@ -2,53 +2,50 @@ package ca.humber.service;
 
 import ca.humber.dao.UsersDao;
 import ca.humber.model.RolePermission;
-import ca.humber.model.Users;
+import ca.humber.model.User;
 import ca.humber.util.HibernateUtil;
 import ca.humber.util.PasswordUtil;
 import ca.humber.util.SessionManager;
-import oracle.jdbc.OracleTypes;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
-import java.sql.CallableStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
 
 public class AuthService {
 
-    public void login(String username, String rawPassword) {
-        String hashedPassword = PasswordUtil.hashPassword(rawPassword);
-        // Create new session - will cache it in app
-        Session session = HibernateUtil.getSessionFactory().openSession();
-        Transaction tx = null;
+	public void login(String username, String rawPassword) {
+		String hashedPassword = PasswordUtil.hashPassword(rawPassword);
+		// Create new session - will cache it in app
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		Transaction tx = null;
 
-        try {
-            tx = session.beginTransaction();
+		try {
+			tx = session.beginTransaction();
 
-            Users user = UsersDao.login(username, hashedPassword, session);
+			SessionManager.setSession(session);
+			User user = UsersDao.login(username, hashedPassword);
 
-            if (user == null) {
-                session.close();
-                throw new RuntimeException("Invalid credentials.");
-            }
+			if (user == null) {
+				session.close();
+				throw new RuntimeException("Invalid credentials.");
+			}
 
-            List<RolePermission> rolePermissions = UsersDao.getRolePermissions(user.getUserRole().getRoleId(), session);
+			List<RolePermission> rolePermissions = UsersDao.getRolePermissions(user.getRoleId());
 
-            // Save to app session
-            SessionManager.login(session, user, rolePermissions);
+			// Save to app session
+			SessionManager.login(user, rolePermissions);
 
-        } catch (Exception e) {
-            if (tx != null) tx.rollback();
-            if (session != null && session.isOpen()) session.close();
-            throw new RuntimeException("Login failed: " + e.getMessage(), e);
-        }
-    }
+		} catch (Exception e) {
+			if (tx != null)
+				tx.rollback();
+			if (session != null && session.isOpen())
+				session.close();
+			throw new RuntimeException("Login failed: " + e.getMessage(), e);
+		}
+	}
 
-    public void logout() {
-        SessionManager.logout();
-    }
-
-
+	public void logout() {
+		SessionManager.logout();
+	}
 
 }
