@@ -22,15 +22,13 @@ public class MechanicDAO {
      * @throws Exception if an error occurs during the operation
      */
     public static boolean saveMechanic(Mechanic mechanic) throws Exception {
-        // If mechanic has no ID (or ID is 0), it's a new mechanic
-        if (mechanic.getMechanicId() == 0) {
-            // Create new mechanic
+        if (mechanic.getMechanicId() == null || mechanic.getMechanicId() == 0) {
             return createMechanic(mechanic);
         } else {
-            // Update existing mechanic
             return updateMechanic(mechanic);
         }
     }
+
 
     /**
      * Get all active mechanics
