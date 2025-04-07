@@ -67,6 +67,11 @@
                         <fx:include source="mechanics_tab.fxml"/>
                     </content>
                 </Tab>
+                <Tab text="Service">
+                    <content>
+                        <fx:include source="service_tab.fxml"/>
+                    </content>
+                </Tab>
             </tabs>
         </TabPane>
     </center>
