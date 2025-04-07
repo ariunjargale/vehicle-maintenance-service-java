@@ -7,18 +7,16 @@ SELECT
     COUNT(CASE WHEN a.STATUS_ID = 'C' THEN 1 END) AS completed_appointments,
     SUM(CASE WHEN a.STATUS_ID = 'C' THEN s.PRICE ELSE 0 END) AS total_revenue,
     ROUND(AVG(CASE WHEN a.STATUS_ID = 'C' THEN s.PRICE ELSE NULL END), 2) AS avg_service_price,
-    st.TYPE_NAME AS service_type,
-    COUNT(CASE WHEN a.STATUS_ID = 'C' AND s.SERVICE_TYPE_ID = st.SERVICE_TYPE_ID THEN 1 END) AS service_type_count
+    s.SERVICE_TYPE_ID AS service_type, 
+    COUNT(CASE WHEN a.STATUS_ID = 'C' THEN 1 END) AS service_type_count
 FROM 
     APPOINTMENT a
 JOIN 
     SERVICE s ON a.SERVICE_ID = s.SERVICE_ID
-JOIN 
-    SERVICE_TYPE st ON s.SERVICE_TYPE_ID = st.SERVICE_TYPE_ID
 GROUP BY 
     EXTRACT(YEAR FROM a.APPOINTMENT_DATE),
     EXTRACT(MONTH FROM a.APPOINTMENT_DATE),
-    st.TYPE_NAME;
+    s.SERVICE_TYPE_ID;
 
 -- Create a view for invoice reports
 CREATE OR REPLACE VIEW vw_invoice_report AS
@@ -31,7 +29,7 @@ SELECT
     v.MAKE || ' ' || v.MODEL || ' (' || v.YEAR || ')' AS vehicle_info,
     v.VIN AS vehicle_vin,
     s.SERVICE_NAME AS service_description,
-    st.TYPE_NAME AS service_category,
+    s.SERVICE_TYPE_ID AS service_category, 
     s.PRICE AS service_price,
     m.NAME AS mechanic_name,
     a.STATUS_ID AS status_id,
@@ -50,8 +48,6 @@ JOIN
     VEHICLE v ON a.VEHICLE_ID = v.VEHICLE_ID
 JOIN 
     SERVICE s ON a.SERVICE_ID = s.SERVICE_ID
-JOIN 
-    SERVICE_TYPE st ON s.SERVICE_TYPE_ID = st.SERVICE_TYPE_ID
 LEFT JOIN 
     MECHANIC m ON a.MECHANIC_ID = m.MECHANIC_ID;
 
@@ -153,20 +149,18 @@ CREATE OR REPLACE PACKAGE BODY report_pkg AS
                 COUNT(CASE WHEN a.STATUS_ID = 'C' THEN 1 END) AS completed_appointments,
                 SUM(CASE WHEN a.STATUS_ID = 'C' THEN s.PRICE ELSE 0 END) AS total_revenue,
                 ROUND(AVG(CASE WHEN a.STATUS_ID = 'C' THEN s.PRICE ELSE NULL END), 2) AS avg_service_price,
-                st.TYPE_NAME AS service_type,
-                COUNT(CASE WHEN a.STATUS_ID = 'C' AND s.SERVICE_TYPE_ID = st.SERVICE_TYPE_ID THEN 1 END) AS service_type_count
+                s.SERVICE_TYPE_ID AS service_type,
+                COUNT(CASE WHEN a.STATUS_ID = 'C' THEN 1 END) AS service_type_count
             FROM 
                 APPOINTMENT a
             JOIN 
                 SERVICE s ON a.SERVICE_ID = s.SERVICE_ID
-            JOIN 
-                SERVICE_TYPE st ON s.SERVICE_TYPE_ID = st.SERVICE_TYPE_ID
             WHERE 
                 a.APPOINTMENT_DATE BETWEEN p_start_date AND p_end_date
             GROUP BY 
                 EXTRACT(YEAR FROM a.APPOINTMENT_DATE),
                 EXTRACT(MONTH FROM a.APPOINTMENT_DATE),
-                st.TYPE_NAME;
+                s.SERVICE_TYPE_ID;
         
         RETURN v_result;
     EXCEPTION
@@ -193,20 +187,18 @@ CREATE OR REPLACE PACKAGE BODY report_pkg AS
                 COUNT(CASE WHEN a.STATUS_ID = 'C' THEN 1 END) AS completed_appointments,
                 SUM(CASE WHEN a.STATUS_ID = 'C' THEN s.PRICE ELSE 0 END) AS total_revenue,
                 ROUND(AVG(CASE WHEN a.STATUS_ID = 'C' THEN s.PRICE ELSE NULL END), 2) AS avg_service_price,
-                st.TYPE_NAME AS service_type
+                s.SERVICE_TYPE_ID AS service_type 
             FROM 
                 APPOINTMENT a
             JOIN 
                 SERVICE s ON a.SERVICE_ID = s.SERVICE_ID
-            JOIN 
-                SERVICE_TYPE st ON s.SERVICE_TYPE_ID = st.SERVICE_TYPE_ID
             WHERE 
                 a.APPOINTMENT_DATE BETWEEN p_start_date AND p_end_date
-                AND st.TYPE_NAME = p_service_type
+                AND s.SERVICE_TYPE_ID = p_service_type
             GROUP BY 
                 EXTRACT(YEAR FROM a.APPOINTMENT_DATE),
                 EXTRACT(MONTH FROM a.APPOINTMENT_DATE),
-                st.TYPE_NAME;
+                s.SERVICE_TYPE_ID;
         
         RETURN v_result;
     EXCEPTION
