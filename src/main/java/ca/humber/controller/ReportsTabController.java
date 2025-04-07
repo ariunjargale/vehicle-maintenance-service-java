@@ -133,6 +133,9 @@ public class ReportsTabController implements Initializable {
         try {
             ObservableList<ServiceTypeWrapper> serviceTypes = FXCollections.observableArrayList();
             
+            // 新增 "All Service Types" 選項
+            serviceTypes.add(new ServiceTypeWrapper(0, "All Service Types"));
+            
             // 直接創建預設的服務類型選項，與 ServiceFormController 保持一致
             serviceTypes.addAll(
                 new ServiceTypeWrapper(1, "Regular Maintenance"),
@@ -148,6 +151,9 @@ public class ReportsTabController implements Initializable {
             );
             
             serviceTypeComboBox.setItems(serviceTypes);
+            
+            // 設定默認選擇 "All Service Types"
+            serviceTypeComboBox.getSelectionModel().selectFirst();
         } catch (Exception e) {
             AlertDialog.showWarning("Error", "Failed to load service types: " + e.getMessage());
             e.printStackTrace();
@@ -197,8 +203,8 @@ public class ReportsTabController implements Initializable {
             // 獲取選擇的服務類型
             ServiceTypeWrapper selectedServiceType = serviceTypeComboBox.getValue();
             
-            // 根據是否選擇了服務類型，選擇調用不同的函數
-            if (selectedServiceType != null) {
+            // 根據是否選擇了服務類型（非 "All Service Types"），選擇調用不同的函數
+            if (selectedServiceType != null && selectedServiceType.getId() != 0) {
                 // 使用服務類型和日期範圍函數
                 LocalDate startDate = LocalDate.of(year, month, 1);
                 LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
@@ -220,7 +226,7 @@ public class ReportsTabController implements Initializable {
                     return null;
                 });
             } else {
-                // 使用年月報表函數
+                // 使用年月報表函數 (當選擇 "All Service Types" 或 null 時)
                 HibernateUtil.callFunction(conn -> {
                     try (CallableStatement stmt = conn.prepareCall("{ ? = call report_pkg.fn_revenue_report(?, ?) }")) {
                         stmt.registerOutParameter(1, OracleTypes.CURSOR);
