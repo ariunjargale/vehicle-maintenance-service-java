@@ -49,8 +49,7 @@ public class ServiceFormController {
                 new ServiceTypeWrapper(7, "Suspension Work"),
                 new ServiceTypeWrapper(8, "Wheel and Tire Service"),
                 new ServiceTypeWrapper(9, "Diagnostic Service"),
-                new ServiceTypeWrapper(10, "Exhaust System Repair")
-        );
+                new ServiceTypeWrapper(10, "Exhaust System Repair"));
 
         // Default to first option
         serviceTypeComboBox.getSelectionModel().selectFirst();
@@ -106,13 +105,13 @@ public class ServiceFormController {
 
         // Populate fields with service data
         serviceNameField.setText(service.getServiceName());
-        priceField.setText(service.getPriceAsDouble() != null ?
-                String.format("%.2f", service.getPriceAsDouble()) : "");
+        priceField.setText(service.getPriceAsDouble() != null ? String.format("%.2f", service.getPriceAsDouble()) : "");
 
         // Set service type based on serviceTypeId if available
         if (service.getServiceTypeId() != null) {
             for (ServiceTypeWrapper item : serviceTypeComboBox.getItems()) {
-                if (item.getId() == service.getServiceTypeId()) {
+                
+                if (String.valueOf(item.getId()).equals(service.getServiceTypeId())) {
                     serviceTypeComboBox.getSelectionModel().select(item);
                     break;
                 }
@@ -135,7 +134,7 @@ public class ServiceFormController {
 
             ServiceTypeWrapper selectedType = serviceTypeComboBox.getValue();
             if (selectedType != null) {
-                service.setServiceTypeId(selectedType.getId());
+                service.setServiceTypeId(String.valueOf(selectedType.getId()));
             }
 
             double priceValue = Double.parseDouble(priceField.getText().trim());

@@ -194,7 +194,7 @@ CREATE OR REPLACE PACKAGE BODY report_pkg AS
                 SERVICE s ON a.SERVICE_ID = s.SERVICE_ID
             WHERE 
                 a.APPOINTMENT_DATE BETWEEN p_start_date AND p_end_date
-                AND s.SERVICE_TYPE_ID = p_service_type
+                AND s.SERVICE_TYPE_ID = p_service_type 
             GROUP BY 
                 EXTRACT(YEAR FROM a.APPOINTMENT_DATE),
                 EXTRACT(MONTH FROM a.APPOINTMENT_DATE),

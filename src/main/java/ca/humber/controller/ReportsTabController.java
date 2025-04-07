@@ -200,19 +200,18 @@ public class ReportsTabController implements Initializable {
             int year = Integer.parseInt(yearField.getText());
             int month = getMonthNumber(monthComboBox.getValue());
             
-            // Get the selected service type
             ServiceTypeWrapper selectedServiceType = serviceTypeComboBox.getValue();
             
-            // Depending on whether a service type is selected (not "All Service Types"), choose to call different functions
             if (selectedServiceType != null && selectedServiceType.getId() != 0) {
-                // Use service type and date range function
                 LocalDate startDate = LocalDate.of(year, month, 1);
                 LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+                
+                String serviceTypeId = String.valueOf(selectedServiceType.getId()); 
                 
                 HibernateUtil.callFunction(conn -> {
                     try (CallableStatement stmt = conn.prepareCall("{ ? = call report_pkg.fn_revenue_report_by_service_type(?, ?, ?) }")) {
                         stmt.registerOutParameter(1, OracleTypes.CURSOR);
-                        stmt.setString(2, selectedServiceType.getName()); // Use service type name
+                        stmt.setString(2, serviceTypeId); 
                         stmt.setDate(3, java.sql.Date.valueOf(startDate));
                         stmt.setDate(4, java.sql.Date.valueOf(endDate));
                         stmt.execute();
@@ -226,7 +225,6 @@ public class ReportsTabController implements Initializable {
                     return null;
                 });
             } else {
-                // Use year and month report function (when "All Service Types" is selected or null)
                 HibernateUtil.callFunction(conn -> {
                     try (CallableStatement stmt = conn.prepareCall("{ ? = call report_pkg.fn_revenue_report(?, ?) }")) {
                         stmt.registerOutParameter(1, OracleTypes.CURSOR);

@@ -17,7 +17,7 @@ public class Service implements Serializable {
     private String serviceName;
 
     @Column(name = "SERVICE_TYPE_ID")
-    private Integer serviceTypeId;
+    private String serviceTypeId;
 
     @Column(name = "PRICE", precision = 10, scale = 2)
     private BigDecimal price;
@@ -25,30 +25,29 @@ public class Service implements Serializable {
     @Column(name = "IS_ACTIVE", nullable = false)
     private Boolean isActive = true;
 
-    // Optional: Define service types as constants for reference
-    public static final int SERVICE_TYPE_REGULAR_MAINTENANCE = 1;
-    public static final int SERVICE_TYPE_ENGINE_REPAIR = 2;
-    public static final int SERVICE_TYPE_TRANSMISSION_REPAIR = 3;
-    public static final int SERVICE_TYPE_BRAKE_SERVICE = 4;
-    public static final int SERVICE_TYPE_ELECTRICAL_REPAIR = 5;
-    public static final int SERVICE_TYPE_AIR_CONDITIONING = 6;
-    public static final int SERVICE_TYPE_SUSPENSION_WORK = 7;
-    public static final int SERVICE_TYPE_WHEEL_TIRE = 8;
-    public static final int SERVICE_TYPE_DIAGNOSTIC = 9;
-    public static final int SERVICE_TYPE_EXHAUST_REPAIR = 10;
+    public static final String SERVICE_TYPE_REGULAR_MAINTENANCE = "1";
+    public static final String SERVICE_TYPE_ENGINE_REPAIR = "2";
+    public static final String SERVICE_TYPE_TRANSMISSION_REPAIR = "3";
+    public static final String SERVICE_TYPE_BRAKE_SERVICE = "4";
+    public static final String SERVICE_TYPE_ELECTRICAL_REPAIR = "5";
+    public static final String SERVICE_TYPE_AIR_CONDITIONING = "6";
+    public static final String SERVICE_TYPE_SUSPENSION_WORK = "7";
+    public static final String SERVICE_TYPE_WHEEL_TIRE = "8";
+    public static final String SERVICE_TYPE_DIAGNOSTIC = "9";
+    public static final String SERVICE_TYPE_EXHAUST_REPAIR = "10";
 
     // Constructors
     public Service() {
     }
 
-    public Service(String serviceName, Integer serviceTypeId, BigDecimal price) {
+    public Service(String serviceName, String serviceTypeId, BigDecimal price) {
         this.serviceName = serviceName;
         this.serviceTypeId = serviceTypeId;
         this.price = price;
         this.isActive = true;
     }
 
-    public Service(int serviceId, String serviceName, Integer serviceTypeId, BigDecimal price, Boolean isActive) {
+    public Service(int serviceId, String serviceName, String serviceTypeId, BigDecimal price, Boolean isActive) {
         this.serviceId = serviceId;
         this.serviceName = serviceName;
         this.serviceTypeId = serviceTypeId;
@@ -73,15 +72,14 @@ public class Service implements Serializable {
         this.serviceName = serviceName;
     }
 
-    public Integer getServiceTypeId() {
+    public String getServiceTypeId() {
         return serviceTypeId;
     }
 
-    public void setServiceTypeId(Integer serviceTypeId) {
+    public void setServiceTypeId(String serviceTypeId) {
         this.serviceTypeId = serviceTypeId;
     }
 
-    // Helper method to get service type name based on ID
     public String getServiceTypeName() {
         if (serviceTypeId == null) {
             return "";

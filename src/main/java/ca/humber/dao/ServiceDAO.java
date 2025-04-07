@@ -60,7 +60,7 @@ public class ServiceDAO {
             String searchPattern = "%" + searchTerm.toLowerCase() + "%";
             Query<Service> query = session.createQuery(
                     "FROM Service s WHERE s.isActive = true AND (LOWER(s.serviceName) LIKE :searchPattern " +
-                            "OR CAST(s.serviceTypeId AS string) LIKE :searchPattern " +
+                            "OR LOWER(s.serviceTypeId) LIKE :searchPattern " +
                             "OR CAST(s.price AS string) LIKE :searchPattern)",
                     Service.class);
             query.setParameter("searchPattern", searchPattern);

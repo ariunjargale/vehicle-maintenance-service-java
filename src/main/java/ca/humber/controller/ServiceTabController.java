@@ -18,6 +18,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.math.BigDecimal;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -30,9 +31,9 @@ public class ServiceTabController implements Initializable {
     @FXML
     private TableColumn<Service, String> serviceNameColumn;
     @FXML
-    private TableColumn<Service, Integer> serviceTypeIdColumn;
+    private TableColumn<Service, String> serviceTypeIdColumn; // 已改為 String 類型
     @FXML
-    private TableColumn<Service, Double> priceColumn;
+    private TableColumn<Service, BigDecimal> priceColumn;
     @FXML
     private TextField serviceSearchField;
 
@@ -50,15 +51,37 @@ public class ServiceTabController implements Initializable {
         serviceTypeIdColumn.setCellValueFactory(new PropertyValueFactory<>("serviceTypeId"));
         priceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
 
-        // Format price as currency
-        priceColumn.setCellFactory(column -> new javafx.scene.control.TableCell<Service, Double>() {
+        serviceTypeIdColumn.setCellFactory(column -> new javafx.scene.control.TableCell<Service, String>() {
             @Override
-            protected void updateItem(Double item, boolean empty) {
+            protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
+                
+                if (empty || item == null) {
+                    setText(null);
+                    return;
+                }
+                
+                int index = getIndex();
+                if (index >= 0 && index < getTableView().getItems().size()) {
+                    Service service = getTableView().getItems().get(index);
+                    if (service != null) {
+                        setText(service.getServiceTypeName());
+                        return;
+                    }
+                }
+                setText(item);
+            }
+        });
+
+        priceColumn.setCellFactory(column -> new javafx.scene.control.TableCell<Service, BigDecimal>() {
+            @Override
+            protected void updateItem(BigDecimal item, boolean empty) {
+                super.updateItem(item, empty);
+                
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(String.format("$%.2f", item));
+                    setText(String.format("$%.2f", item.doubleValue()));
                 }
             }
         });
