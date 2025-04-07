@@ -22,7 +22,7 @@
             <children>
                 <HBox alignment="CENTER_LEFT" spacing="10.0">
                     <children>
-                        <Label text="search:" />
+                        <Label text="Username:" />
                         <TextField fx:id="searchField" prefHeight="30.0" prefWidth="300.0" />
                         <Button mnemonicParsing="false" onAction="#handleSearch" prefHeight="30.0" text="search" />
                     </children>

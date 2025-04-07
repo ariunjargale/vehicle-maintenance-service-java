@@ -62,33 +62,42 @@ CREATE OR REPLACE PACKAGE BODY user_pkg AS
     ----------------------------------------------------------------
     -- Login
     ----------------------------------------------------------------
-    FUNCTION login (
-        p_username IN VARCHAR2,
-        p_password IN VARCHAR2
-    ) RETURN SYS_REFCURSOR IS
-        v_cursor   SYS_REFCURSOR;
-        v_user_id  NUMBER;
-    BEGIN
-        SELECT u.user_id
-        INTO v_user_id
-        FROM users u
-        WHERE u.username = p_username
-          AND u.password = p_password
-          AND u.is_active = 1;
+	FUNCTION login (
+	    p_username IN VARCHAR2,
+	    p_password IN VARCHAR2
+	) RETURN SYS_REFCURSOR IS
+	    v_cursor   SYS_REFCURSOR;
+	    v_user_id  NUMBER;
+	    v_is_active NUMBER;
+	BEGIN
+	    -- Try get user ID
+	    BEGIN
+	        SELECT user_id, is_active
+	        INTO v_user_id, v_is_active
+	        FROM users
+	        WHERE username = p_username AND password = p_password;
+	    EXCEPTION
+	        WHEN NO_DATA_FOUND THEN
+	            RAISE_APPLICATION_ERROR(-20001, 'Invalid username or password.');
+	    END;
+	
+	    -- Check if user is active
+	    IF v_is_active = 0 THEN
+	        RAISE_APPLICATION_ERROR(-20002, 'User account is inactive.');
+	    END IF;
+	
+	    -- Set session context
+	    DBMS_SESSION.SET_CONTEXT('LOGIN_CTX', 'USER_ID', v_user_id);
+	
+	    -- Return user info
+	    OPEN v_cursor FOR
+	        SELECT user_id, username, role_id
+	        FROM users
+	        WHERE user_id = v_user_id;
+	
+	    RETURN v_cursor;
+	END;
 
-        DBMS_SESSION.SET_CONTEXT('LOGIN_CTX', 'USER_ID', v_user_id);
-
-        OPEN v_cursor FOR
-            SELECT u.user_id, u.username, u.role_id
-            FROM users u
-            WHERE u.user_id = v_user_id;
-
-        RETURN v_cursor;
-
-    EXCEPTION
-        WHEN no_data_found THEN
-            RETURN NULL;
-    END;
     
     ----------------------------------------------------------------
     -- Get role permissions

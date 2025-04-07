@@ -27,12 +27,13 @@ public class UsersDao {
 						User result = new User();
 						result.setUserId(rs.getInt("user_id"));
 						result.setUsername(rs.getString("username"));
-						result.setRoleId(rs.getInt("user_id"));
+						result.setRoleId(rs.getInt("role_id"));
 						return result;
 					}
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(), e);
 			}
 
 			return null;

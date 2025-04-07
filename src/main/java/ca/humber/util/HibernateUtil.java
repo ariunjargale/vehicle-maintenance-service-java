@@ -44,7 +44,7 @@ public class HibernateUtil {
 			} catch (Exception e) {
 				if (tx != null && tx.isActive())
 					tx.rollback();
-				throw new RuntimeException("Failed to call procedure", e);
+				throw (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
 			}
 		}
 	}
@@ -63,7 +63,7 @@ public class HibernateUtil {
 			} catch (Exception e) {
 				if (tx != null && tx.isActive())
 					tx.rollback();
-				throw new RuntimeException("Failed to call function", e);
+				throw (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
 			}
 		}
 	}
@@ -82,7 +82,7 @@ public class HibernateUtil {
 			} catch (Exception e) {
 				if (tx != null && tx.isActive())
 					tx.rollback();
-				throw new RuntimeException("Failed to call result list function", e);
+				throw (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
 			}
 		}
 	}
@@ -90,35 +90,39 @@ public class HibernateUtil {
 	// It'll be removed
 	public static void executeInsideTransaction(Consumer<Session> action) {
 		Session session = SessionManager.getSession();
-		Transaction tx = session.getTransaction();
-		try {
-			if (tx == null || !tx.isActive()) {
-				tx = session.beginTransaction();
+		synchronized (sessionLock) {
+			Transaction tx = session.getTransaction();
+			try {
+				if (tx == null || !tx.isActive()) {
+					tx = session.beginTransaction();
+				}
+				action.accept(session);
+				tx.commit();
+			} catch (Exception e) {
+				if (tx != null)
+					tx.rollback();
+				e.printStackTrace();
 			}
-			action.accept(session);
-			tx.commit();
-		} catch (Exception e) {
-			if (tx != null)
-				tx.rollback();
-			e.printStackTrace();
 		}
 	}
 
 	// It'll be removed
 	public static <T> T executeWithResult(Function<Session, T> function) {
 		Session session = SessionManager.getSession();
-		Transaction tx = session.getTransaction();
-		try {
-			if (tx == null || !tx.isActive()) {
-				tx = session.beginTransaction();
+		synchronized (sessionLock) {
+			Transaction tx = session.getTransaction();
+			try {
+				if (tx == null || !tx.isActive()) {
+					tx = session.beginTransaction();
+				}
+				T result = function.apply(session);
+				tx.commit();
+				return result;
+			} catch (Exception e) {
+				if (tx != null)
+					tx.rollback();
+				throw new RuntimeException(e);
 			}
-			T result = function.apply(session);
-			tx.commit();
-			return result;
-		} catch (Exception e) {
-			if (tx != null)
-				tx.rollback();
-			throw new RuntimeException(e);
 		}
 	}
 }
