@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="ca.humber.controller.ServiceFormController"
+      spacing="15" alignment="CENTER" styleClass="form-container"
+      prefWidth="500.0" prefHeight="400.0">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20" />
+    </padding>
+
+    <Label text="Service Information" styleClass="form-title" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+
+    <GridPane hgap="10" vgap="15">
+        <columnConstraints>
+            <ColumnConstraints minWidth="100" prefWidth="120" />
+            <ColumnConstraints hgrow="ALWAYS" />
+        </columnConstraints>
+
+        <!-- Service Name -->
+        <Label text="Service Name:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+        <TextField fx:id="serviceNameField" promptText="Enter service name"
+                   GridPane.rowIndex="0" GridPane.columnIndex="1" />
+
+        <!-- Service Type -->
+        <Label text="Service Type:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+        <ComboBox fx:id="serviceTypeComboBox"
+                  GridPane.rowIndex="1" GridPane.columnIndex="1" prefWidth="240.0" />
+
+        <!-- Price -->
+        <Label text="Price ($):" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+        <TextField fx:id="priceField" promptText="Enter price"
+                   GridPane.rowIndex="2" GridPane.columnIndex="1" />
+    </GridPane>
+
+    <!-- Button Area -->
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button fx:id="saveButton" text="Save" onAction="#handleSave"
+                prefWidth="100" style="-fx-background-color: #27ae60; -fx-text-fill: white;" />
+        <Button fx:id="cancelButton" text="Cancel" onAction="#handleCancel"
+                prefWidth="100" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" />
+    </HBox>
+</VBox>
