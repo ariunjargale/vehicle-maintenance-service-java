@@ -49,7 +49,7 @@ public class ReportsTabController implements Initializable {
     @FXML
     private ComboBox<String> monthComboBox;
 
-    // 修改這裡，改用 ServiceTypeWrapper
+    // Modify here to use ServiceTypeWrapper
     @FXML
     private ComboBox<ServiceTypeWrapper> serviceTypeComboBox;
 
@@ -84,14 +84,14 @@ public class ReportsTabController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // 設置月份映射
+        // Set up month mapping
         String[] months = {"January", "February", "March", "April", "May", "June", 
                           "July", "August", "September", "October", "November", "December"};
         for (int i = 0; i < months.length; i++) {
             monthNameToNumber.put(months[i], i + 1);
         }
         
-        // 設定報表類型變更事件
+        // Set report type change event
         reportTypeComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 if ("Revenue Report".equals(newValue)) {
@@ -108,35 +108,35 @@ public class ReportsTabController implements Initializable {
             }
         });
         
-        // 初始化年份為當前年份
+        // Initialize year to current year
         yearField.setText(String.valueOf(LocalDate.now().getYear()));
         
-        // 初始化月份為當前月份
+        // Initialize month to current month
         monthComboBox.setValue(months[LocalDate.now().getMonthValue() - 1]);
         
-        // 初始化日期選擇器
+        // Initialize date pickers
         startDatePicker.setValue(LocalDate.now().minusMonths(1));
         endDatePicker.setValue(LocalDate.now());
         
-        // 載入服務類型
+        // Load service types
         loadServiceTypes();
         
-        // 載入客戶
+        // Load customers
         loadCustomers();
         
-        // 初始化儲存報表按鈕
+        // Initialize save report button
         saveReportButton.setDisable(true);
     }
 
-    // 在 ReportsTabController 類中添加此方法
+    // Add this method in ReportsTabController class
     private void loadServiceTypes() {
         try {
             ObservableList<ServiceTypeWrapper> serviceTypes = FXCollections.observableArrayList();
             
-            // 新增 "All Service Types" 選項
+            // Add "All Service Types" option
             serviceTypes.add(new ServiceTypeWrapper(0, "All Service Types"));
             
-            // 直接創建預設的服務類型選項，與 ServiceFormController 保持一致
+            // Directly create default service type options, consistent with ServiceFormController
             serviceTypes.addAll(
                 new ServiceTypeWrapper(1, "Regular Maintenance"),
                 new ServiceTypeWrapper(2, "Engine Repair"),
@@ -152,7 +152,7 @@ public class ReportsTabController implements Initializable {
             
             serviceTypeComboBox.setItems(serviceTypes);
             
-            // 設定默認選擇 "All Service Types"
+            // Set default selection to "All Service Types"
             serviceTypeComboBox.getSelectionModel().selectFirst();
         } catch (Exception e) {
             AlertDialog.showWarning("Error", "Failed to load service types: " + e.getMessage());
@@ -200,19 +200,19 @@ public class ReportsTabController implements Initializable {
             int year = Integer.parseInt(yearField.getText());
             int month = getMonthNumber(monthComboBox.getValue());
             
-            // 獲取選擇的服務類型
+            // Get the selected service type
             ServiceTypeWrapper selectedServiceType = serviceTypeComboBox.getValue();
             
-            // 根據是否選擇了服務類型（非 "All Service Types"），選擇調用不同的函數
+            // Depending on whether a service type is selected (not "All Service Types"), choose to call different functions
             if (selectedServiceType != null && selectedServiceType.getId() != 0) {
-                // 使用服務類型和日期範圍函數
+                // Use service type and date range function
                 LocalDate startDate = LocalDate.of(year, month, 1);
                 LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
                 
                 HibernateUtil.callFunction(conn -> {
                     try (CallableStatement stmt = conn.prepareCall("{ ? = call report_pkg.fn_revenue_report_by_service_type(?, ?, ?) }")) {
                         stmt.registerOutParameter(1, OracleTypes.CURSOR);
-                        stmt.setString(2, selectedServiceType.getName()); // 使用服務類型名稱
+                        stmt.setString(2, selectedServiceType.getName()); // Use service type name
                         stmt.setDate(3, java.sql.Date.valueOf(startDate));
                         stmt.setDate(4, java.sql.Date.valueOf(endDate));
                         stmt.execute();
@@ -226,7 +226,7 @@ public class ReportsTabController implements Initializable {
                     return null;
                 });
             } else {
-                // 使用年月報表函數 (當選擇 "All Service Types" 或 null 時)
+                // Use year and month report function (when "All Service Types" is selected or null)
                 HibernateUtil.callFunction(conn -> {
                     try (CallableStatement stmt = conn.prepareCall("{ ? = call report_pkg.fn_revenue_report(?, ?) }")) {
                         stmt.registerOutParameter(1, OracleTypes.CURSOR);
@@ -257,9 +257,9 @@ public class ReportsTabController implements Initializable {
         try {
             String invoiceId = invoiceIdField.getText().trim();
             
-            // 根據是否指定了發票ID選擇不同的查詢方式
+            // Select different query methods depending on whether an invoice ID is specified
             if (!invoiceId.isEmpty()) {
-                // 如果指定了發票ID，則直接查詢特定發票
+                // If an invoice ID is specified, query the specific invoice directly
                 int id = Integer.parseInt(invoiceId);
                 
                 HibernateUtil.callFunction(conn -> {
@@ -277,12 +277,12 @@ public class ReportsTabController implements Initializable {
                     return null;
                 });
             } else {
-                // 根據條件查詢發票
+                // Query invoices based on conditions
                 LocalDate startDate = startDatePicker.getValue();
                 LocalDate endDate = endDatePicker.getValue();
                 String statusValue = statusComboBox.getValue();
                 
-                // 轉換狀態碼
+                // Convert status code
                 String statusCode = null;
                 if (statusValue != null && !statusValue.equals("All")) {
                     if ("Scheduled".equals(statusValue)) statusCode = "S";
@@ -291,10 +291,10 @@ public class ReportsTabController implements Initializable {
                     else if ("Canceled".equals(statusValue)) statusCode = "X";
                 }
                 
-                // 檢查是否選擇了客戶
+                // Check if a customer is selected
                 Customer selectedCustomer = customerComboBox.getValue();
                 
-                // 如果選擇了特定客戶
+                // If a specific customer is selected
                 if (selectedCustomer != null) {
                     final int customerId = selectedCustomer.getCustomerId();
                     
@@ -315,7 +315,7 @@ public class ReportsTabController implements Initializable {
                         return null;
                     });
                 }
-                // 如果選擇了特定狀態
+                // If a specific status is selected
                 else if (statusCode != null) {
                     final String finalStatusCode = statusCode;
                     
@@ -336,7 +336,7 @@ public class ReportsTabController implements Initializable {
                         return null;
                     });
                 }
-                // 否則查詢日期範圍內的所有發票
+                // Otherwise, query all invoices within the date range
                 else {
                     HibernateUtil.callFunction(conn -> {
                         try (CallableStatement stmt = conn.prepareCall("{ ? = call report_pkg.fn_revenue_report_by_date_range(?, ?) }")) {
@@ -406,15 +406,15 @@ public class ReportsTabController implements Initializable {
         reportTableView.getItems().clear();
     }
 
-    // 修改 populateTableFromResultSet 方法以增強錯誤處理和數據類型轉換安全性
+    // Modify populateTableFromResultSet method to enhance error handling and data type conversion security
     private void populateTableFromResultSet(ResultSet rs) throws SQLException {
-        // 清空表格
+        // Clear the table
         clearTableView();
 
         ResultSetMetaData metaData = rs.getMetaData();
         int columnCount = metaData.getColumnCount();
 
-        // 创建表格列
+        // Create table columns
         for (int i = 1; i <= columnCount; i++) {
             final int columnIndex = i - 1;
             String columnName = metaData.getColumnName(i);
@@ -435,7 +435,7 @@ public class ReportsTabController implements Initializable {
             reportTableView.getColumns().add(column);
         }
 
-        // 添加數據行，增強錯誤處理
+        // Add data rows, enhance error handling
         ObservableList<ObservableList<Object>> data = FXCollections.observableArrayList();
         while (rs.next()) {
             ObservableList<Object> row = FXCollections.observableArrayList();
@@ -444,12 +444,12 @@ public class ReportsTabController implements Initializable {
                     Object value = rs.getObject(i);
                     row.add(value);
                 } catch (SQLException e) {
-                    // 如果獲取對象失敗，嘗試作為字符串獲取
+                    // If getting the object fails, try getting it as a string
                     try {
                         String stringValue = rs.getString(i);
                         row.add(stringValue);
                     } catch (SQLException ex) {
-                        // 如果還是失敗，添加空字符串
+                        // If it still fails, add an empty string
                         row.add("");
                     }
                 }
