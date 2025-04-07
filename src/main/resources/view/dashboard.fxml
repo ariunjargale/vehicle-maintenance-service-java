@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <BorderPane prefHeight="400.0" prefWidth="700.0" xmlns:fx="http://javafx.com/fxml/1"
-            xmlns="http://javafx.com/javafx/17.0.12" fx:controller="ca.humber.controller.DashboardController">
+    xmlns="http://javafx.com/javafx/17.0.12" fx:controller="ca.humber.controller.DashboardController">
     <top>
         <VBox>
             <MenuBar>
@@ -14,16 +14,16 @@
                     <!-- Admin Only Menu -->
                     <Menu fx:id="adminMenu" text="Admin">
                         <items>
-                            <MenuItem onAction="#handleUserManagement" text="User Management"/>
-                            <MenuItem onAction="#handleSystemSettings" text="System Settings"/>
+                            <MenuItem onAction="#handleUserManagement" text="User Management" />
+                            <MenuItem onAction="#handleSystemSettings" text="System Settings" />
                         </items>
                     </Menu>
 
                     <!-- General Account Menu -->
                     <Menu text="Account">
                         <items>
-                            <MenuItem onAction="#handleProfileInfo" text="Profile Info"/>
-                            <MenuItem onAction="#handleLogout" text="Logout"/>
+                            <MenuItem onAction="#handleProfileInfo" text="Profile Info" />
+                            <MenuItem onAction="#handleLogout" text="Logout" />
                         </items>
                     </Menu>
                 </menus>
@@ -32,7 +32,7 @@
                 <children>
                     <Label text="Vehicle Maintenance System" textFill="WHITE">
                         <font>
-                            <Font name="System Bold" size="24.0"/>
+                            <Font name="System Bold" size="24.0" />
                         </font>
                     </Label>
                 </children>
@@ -44,32 +44,37 @@
             <tabs>
                 <Tab text="Appointments">
                     <content>
-                        <fx:include source="appointments_tab.fxml"/>
+                        <fx:include source="appointments_tab.fxml" />
                     </content>
                 </Tab>
                 <Tab text="Customers">
                     <content>
-                        <fx:include source="customers_tab.fxml"/>
+                        <fx:include source="customers_tab.fxml" />
                     </content>
                 </Tab>
                 <Tab text="Vehicles">
                     <content>
-                        <fx:include source="vehicles_tab.fxml"/>
+                        <fx:include source="vehicles_tab.fxml" />
                     </content>
                 </Tab>
                 <Tab text="Inventory">
                     <content>
-                        <fx:include source="inventory_tab.fxml"/>
+                        <fx:include source="inventory_tab.fxml" />
                     </content>
                 </Tab>
                 <Tab text="Mechanics">
                     <content>
-                        <fx:include source="mechanics_tab.fxml"/>
+                        <fx:include source="mechanics_tab.fxml" />
                     </content>
                 </Tab>
                 <Tab text="Service">
                     <content>
-                        <fx:include source="service_tab.fxml"/>
+                        <fx:include source="service_tab.fxml" />
+                    </content>
+                </Tab>
+                <Tab text="Reports">
+                    <content>
+                        <fx:include source="reports_tab.fxml" />
                     </content>
                 </Tab>
             </tabs>

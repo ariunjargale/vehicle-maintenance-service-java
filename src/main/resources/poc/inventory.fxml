@@ -71,7 +71,7 @@
                         </BorderPane>
                     </content>
                 </Tab>
-                
+
                 <!-- 預約頁籤 -->
                 <Tab text="Appointments">
                     <content>
@@ -122,7 +122,7 @@
                         </BorderPane>
                     </content>
                 </Tab>
-                
+
                 <!-- 車輛頁籤 -->
                 <Tab text="Vehicles">
                     <content>
@@ -173,7 +173,7 @@
                         </BorderPane>
                     </content>
                 </Tab>
-                
+
                 <!-- 客戶頁籤 -->
                 <Tab text="Customers">
                     <content>

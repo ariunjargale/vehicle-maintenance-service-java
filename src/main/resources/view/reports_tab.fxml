@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+<!-- filepath: /Users/samuellaw/Documents/GitHub/vehicle-maintenance-service-java/src/main/resources/view/reports_tab.fxml -->
+<BorderPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ca.humber.controller.ReportsTabController">
+    <top>
+        <VBox spacing="15.0">
+            <padding>
+                <Insets top="15.0" right="15.0" bottom="15.0" left="15.0"/>
+            </padding>
+            
+            <GridPane hgap="10" vgap="10">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="NEVER" minWidth="150.0" prefWidth="150.0" />
+                    <ColumnConstraints hgrow="SOMETIMES" minWidth="200.0" prefWidth="200.0" />
+                    <ColumnConstraints hgrow="NEVER" minWidth="100.0" prefWidth="100.0" />
+                    <ColumnConstraints hgrow="SOMETIMES" minWidth="200.0" prefWidth="200.0" />
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="30.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                    <RowConstraints minHeight="30.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                    <RowConstraints minHeight="30.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                </rowConstraints>
+                
+                <Label text="Report Type:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                <ComboBox fx:id="reportTypeComboBox" promptText="Select report type" GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="200.0" GridPane.fillWidth="true">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <String fx:value="Revenue Report" />
+                            <String fx:value="Invoice Report" />
+                        </FXCollections>
+                    </items>
+                </ComboBox>
+                
+                <Label text="Report Format:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                <ComboBox fx:id="reportFormatComboBox" promptText="Select format" GridPane.columnIndex="3" GridPane.rowIndex="0" prefWidth="200.0" GridPane.fillWidth="true">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <String fx:value="Table View" />
+                        </FXCollections>
+                    </items>
+                </ComboBox>
+                
+                <VBox fx:id="revenueOptionsPane" visible="false" managed="false" spacing="10.0" GridPane.columnIndex="0" GridPane.columnSpan="4" GridPane.rowIndex="1">
+                    <GridPane hgap="10" vgap="10">
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="NEVER" minWidth="150.0" prefWidth="150.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="200.0" prefWidth="200.0" />
+                            <ColumnConstraints hgrow="NEVER" minWidth="100.0" prefWidth="100.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="200.0" prefWidth="200.0" />
+                        </columnConstraints>
+                        <rowConstraints>
+                            <RowConstraints minHeight="30.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="30.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                        </rowConstraints>
+                        
+                        <Label text="Year:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <TextField fx:id="yearField" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        
+                        <Label text="Month:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                        <ComboBox fx:id="monthComboBox" GridPane.columnIndex="3" GridPane.rowIndex="0" prefWidth="200.0" GridPane.fillWidth="true">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="January" />
+                                    <String fx:value="February" />
+                                    <String fx:value="March" />
+                                    <String fx:value="April" />
+                                    <String fx:value="May" />
+                                    <String fx:value="June" />
+                                    <String fx:value="July" />
+                                    <String fx:value="August" />
+                                    <String fx:value="September" />
+                                    <String fx:value="October" />
+                                    <String fx:value="November" />
+                                    <String fx:value="December" />
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+                        
+                        <Label text="Service Type (Optional):" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <ComboBox fx:id="serviceTypeComboBox" promptText="All Service Types" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="200.0" GridPane.fillWidth="true" />
+                    </GridPane>
+                </VBox>
+                
+                <VBox fx:id="invoiceOptionsPane" visible="false" managed="false" spacing="10.0" GridPane.columnIndex="0" GridPane.columnSpan="4" GridPane.rowIndex="1">
+                    <GridPane hgap="10" vgap="10">
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="NEVER" minWidth="150.0" prefWidth="150.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="200.0" prefWidth="200.0" />
+                            <ColumnConstraints hgrow="NEVER" minWidth="100.0" prefWidth="100.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="200.0" prefWidth="200.0" />
+                        </columnConstraints>
+                        <rowConstraints>
+                            <RowConstraints minHeight="30.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="30.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                        </rowConstraints>
+                        
+                        <Label text="Invoice ID (Optional):" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <TextField fx:id="invoiceIdField" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        
+                        <Label text="Customer:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                        <ComboBox fx:id="customerComboBox" promptText="All Customers" GridPane.columnIndex="3" GridPane.rowIndex="0" prefWidth="200.0" GridPane.fillWidth="true" />
+                        
+                        <Label text="Status:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <ComboBox fx:id="statusComboBox" promptText="All Statuses" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="200.0" GridPane.fillWidth="true">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="All" />
+                                    <String fx:value="Scheduled" />
+                                    <String fx:value="In Progress" />
+                                    <String fx:value="Completed" />
+                                    <String fx:value="Canceled" />
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+                    </GridPane>
+                </VBox>
+                
+                <Label text="Date Range:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <HBox spacing="10.0" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2">
+                    <DatePicker fx:id="startDatePicker" promptText="Start Date" />
+                    <Label text="to" />
+                    <DatePicker fx:id="endDatePicker" promptText="End Date" />
+                </HBox>
+            </GridPane>
+            
+            <HBox spacing="10.0" alignment="CENTER_RIGHT">
+                <Button fx:id="generateReportButton" text="Generate Report" onAction="#handleGenerateReport" style="-fx-background-color: #3498db;" textFill="WHITE" prefWidth="150.0" prefHeight="35.0" />
+                <Button fx:id="saveReportButton" text="Save Report" onAction="#handleSaveReport" style="-fx-background-color: #27ae60;" textFill="WHITE" prefWidth="150.0" prefHeight="35.0" />
+                <Button fx:id="clearButton" text="Clear" onAction="#handleClear" style="-fx-background-color: #e74c3c;" textFill="WHITE" prefWidth="100.0" prefHeight="35.0" />
+            </HBox>
+        </VBox>
+    </top>
+    
+    <center>
+        <BorderPane>
+            <center>
+                <TableView fx:id="reportTableView" prefHeight="500.0" prefWidth="800.0">
+                    <placeholder>
+                        <Label text="No report data to display. Please select report type and parameters, then click 'Generate Report'." />
+                    </placeholder>
+                    <BorderPane.margin>
+                        <Insets top="10.0" right="15.0" bottom="15.0" left="15.0" />
+                    </BorderPane.margin>
+                </TableView>
+            </center>
+        </BorderPane>
+    </center>
+</BorderPane>
