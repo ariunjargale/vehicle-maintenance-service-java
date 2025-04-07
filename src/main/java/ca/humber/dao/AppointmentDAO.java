@@ -126,10 +126,6 @@ public class AppointmentDAO {
 
             e.printStackTrace();
             return false;
-        } finally {
-            if (session != null && session.isOpen()) {
-                session.close();
-            }
         }
     }
 

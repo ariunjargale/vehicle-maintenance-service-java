@@ -178,7 +178,7 @@ public class UsersDao {
 				stmt.execute();
 			} catch (SQLException e) {
 				e.printStackTrace(); // optionally log
-				throw new RuntimeException("❌ Failed to reset password", e);
+				throw new RuntimeException("Failed to reset password", e);
 			}
 		});
 	}
