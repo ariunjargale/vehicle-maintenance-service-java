@@ -15,32 +15,26 @@ public class AuthService {
 
 	public void login(String username, String rawPassword) {
 		String hashedPassword = PasswordUtil.hashPassword(rawPassword);
-		// Create new session - will cache it in app
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		Transaction tx = null;
 
 		try {
 			tx = session.beginTransaction();
-
 			SessionManager.setSession(session);
 			User user = UsersDao.login(username, hashedPassword);
-
 			if (user == null) {
-				session.close();
 				throw new RuntimeException("Invalid credentials.");
 			}
 
 			List<RolePermission> rolePermissions = UsersDao.getRolePermissions(user.getRoleId());
 
-			// Save to app session
 			SessionManager.login(user, rolePermissions);
 
-		} catch (Exception e) {
-			if (tx != null)
+		} catch (Exception ex) {
+			if (tx != null && tx.isActive()) {
 				tx.rollback();
-			if (session != null && session.isOpen())
-				session.close();
-			throw new RuntimeException("Login failed: " + e.getMessage(), e);
+			}
+			throw ex;
 		}
 	}
 
