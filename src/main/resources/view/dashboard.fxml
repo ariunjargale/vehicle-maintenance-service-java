@@ -72,6 +72,11 @@
                         <fx:include source="service_tab.fxml" />
                     </content>
                 </Tab>
+                <Tab text="Service Inventory">
+                    <content>
+                        <fx:include source="service_inventory_tab.fxml" />
+                    </content>
+                </Tab>
                 <Tab text="Reports">
                     <content>
                         <fx:include source="reports_tab.fxml" />
