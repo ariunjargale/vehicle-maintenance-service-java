@@ -15,7 +15,7 @@
                     <Menu fx:id="adminMenu" text="Admin">
                         <items>
                             <MenuItem onAction="#handleUserManagement" text="User Management" />
-                            <MenuItem onAction="#handleSystemSettings" text="System Settings" />
+                            <MenuItem onAction="#handleRoleManagement" text="Role Management" />
                         </items>
                     </Menu>
 
