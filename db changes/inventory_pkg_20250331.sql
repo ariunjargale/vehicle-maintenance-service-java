@@ -50,6 +50,10 @@ CREATE OR REPLACE PACKAGE inventory_pkg AS
     PROCEDURE sp_delete_inventory (
         p_item_id IN NUMBER
     );
+    
+    FUNCTION get_low_stocks (
+        p_threshold IN NUMBER
+    ) RETURN inventory_table_type;
 
 END inventory_pkg;
 /
@@ -191,6 +195,26 @@ CREATE OR REPLACE PACKAGE BODY inventory_pkg AS
         WHEN OTHERS THEN
             NULL;
     END sp_delete_inventory;
+    
+    FUNCTION get_low_stocks (
+        p_threshold IN NUMBER
+    ) RETURN inventory_table_type IS
+        v_result inventory_table_type := inventory_table_type();
+    BEGIN
+        SELECT
+            inventory_row_type(item_id, item_name, quantity, price, is_active)
+        BULK COLLECT
+        INTO v_result
+        FROM
+            inventory
+        WHERE is_active = 1
+            AND quantity <= p_threshold;
+
+        RETURN v_result;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RETURN inventory_table_type();
+    END get_low_stocks;
 
 END inventory_pkg;
 /

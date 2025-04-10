@@ -34,4 +34,8 @@ public class InventoryService {
     public static int getInventoryCount() {
         return InventoryDAO.getInventoryCount();
     }
+    
+    public static List<Inventory> getLowStocks(int threshold) {
+        return InventoryDAO.getLowStocks(threshold);
+    }
 }

@@ -114,6 +114,24 @@ public class InventoryDAO {
             }
         });
     }
+    
+    public static List<Inventory> getLowStocks(int threshold) {
+        return HibernateUtil.callResultListFunction(conn -> {
+            List<Inventory> list = new ArrayList<>();
+            String sql = "SELECT * FROM TABLE(inventory_pkg.get_low_stocks(?))";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, threshold);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        list.add(fromResultSet(rs));
+                    }
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException("Failed to getLowStocks", e);
+            }
+            return list;
+        });
+    }
 
     private static Inventory fromResultSet(ResultSet rs) throws SQLException {
         Inventory inv = new Inventory();

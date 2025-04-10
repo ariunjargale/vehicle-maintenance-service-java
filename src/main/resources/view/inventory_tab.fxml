@@ -26,6 +26,10 @@
                         <Label text="search:" />
                         <TextField fx:id="searchField" prefHeight="30.0" prefWidth="300.0" />
                         <Button mnemonicParsing="false" onAction="#handleSearch" prefHeight="30.0" text="search" />
+                        
+                        <Label text="Low Stock:" />
+				        <TextField fx:id="lowStockField" prefHeight="30.0" prefWidth="100.0" />
+				        <Button mnemonicParsing="false" onAction="#handleLowStockFilter" prefHeight="30.0" text="filter" />
                     </children>
                     <padding>
                         <Insets left="10.0" />
