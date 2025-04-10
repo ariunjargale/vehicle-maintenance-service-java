@@ -52,24 +52,20 @@ public class AppointmentFormController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        // Set the date picker to today
         appointmentDatePicker.setValue(LocalDate.now());
 
-        // Set time options
         String[] times = { "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00" };
         appointmentTimeComboBox.setItems(FXCollections.observableArrayList(times));
         appointmentTimeComboBox.setValue("09:00");
 
-        // Set status options
         String[] statuses = { "Scheduled", "In Progress", "Completed", "Cancelled" };
         statusComboBox.setItems(FXCollections.observableArrayList(statuses));
         statusComboBox.setValue("Scheduled");
+        
+        mechanicComboBox.setPromptText("Select a mechanic (optional)");
 
-        // Configure the display format of combo boxes
         setupComboBoxes();
-
-        // Load data
-        loadCustomers();
+        
 
         // Set customer selection event - load vehicles when a customer is selected
         customerComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
@@ -384,11 +380,10 @@ public class AppointmentFormController implements Initializable {
         }
 
         try {
-            // Retrieve form data
             Customer selectedCustomer = customerComboBox.getValue();
             Vehicle selectedVehicle = vehicleComboBox.getValue();
             Service selectedService = serviceComboBox.getValue();
-            Mechanic selectedMechanic = mechanicComboBox.getValue();
+            Mechanic selectedMechanic = mechanicComboBox.getValue(); 
             LocalDate selectedDate = appointmentDatePicker.getValue();
             String selectedTime = appointmentTimeComboBox.getValue();
             String selectedStatus = statusComboBox.getValue();
@@ -430,41 +425,45 @@ public class AppointmentFormController implements Initializable {
             boolean success;
 
             if ("add".equals(mode)) {
-                // Create new appointment
+                // 創建新預約
                 Appointment newAppointment = new Appointment(
                         selectedCustomer,
                         selectedVehicle,
                         selectedService,
-                        selectedMechanic,
+                        selectedMechanic, // 可以傳入 null
                         appointmentDateTime,
                         statusId);
 
                 success = AppointmentDAO.createAppointment(newAppointment);
                 if (success) {
-                    AlertDialog.showSuccess("Success", "Appointment has been created successfully");
+                    String mechanicInfo = selectedMechanic != null ? 
+                            " with " + selectedMechanic.getName() : "";
+                    AlertDialog.showSuccess("Success", "Appointment has been created successfully" + mechanicInfo);
                 } else {
                     AlertDialog.showError("Error", "Failed to create appointment. Please try again.");
                     return;
                 }
             } else {
-                // Update existing appointment
+                // 更新現有預約
                 existingAppointment.setCustomer(selectedCustomer);
                 existingAppointment.setVehicle(selectedVehicle);
                 existingAppointment.setService(selectedService);
-                existingAppointment.setMechanic(selectedMechanic);
+                existingAppointment.setMechanic(selectedMechanic); // 可以設為 null
                 existingAppointment.setAppointmentDate(appointmentDateTime);
                 existingAppointment.setStatusId(statusId);
 
                 success = AppointmentDAO.updateAppointment(existingAppointment);
                 if (success) {
-                    AlertDialog.showSuccess("Success", "Appointment has been updated successfully");
+                    String mechanicInfo = selectedMechanic != null ? 
+                            " with " + selectedMechanic.getName() : "";
+                    AlertDialog.showSuccess("Success", "Appointment has been updated successfully" + mechanicInfo);
                 } else {
                     AlertDialog.showError("Error", "Failed to update appointment. Please try again.");
                     return;
                 }
             }
 
-            // Close form and refresh list
+            // 關閉表單並刷新列表
             if (parentController != null) {
                 parentController.refreshAppointments();
             }

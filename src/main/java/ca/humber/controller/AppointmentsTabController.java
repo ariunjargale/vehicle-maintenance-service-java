@@ -46,6 +46,8 @@ public class AppointmentsTabController implements Initializable {
     @FXML
     private TableColumn<Appointment, Service> serviceTypeColumn;
     @FXML
+    private TableColumn<Appointment, Mechanic> mechanicColumn; 
+    @FXML
     private TableColumn<Appointment, String> statusColumn;
     @FXML
     private TextField appointmentSearchField;
@@ -124,6 +126,20 @@ public class AppointmentsTabController implements Initializable {
                     setText(null);
                 } else {
                     setText(service.getServiceName());
+                }
+            }
+        });
+
+        mechanicColumn.setCellValueFactory(new PropertyValueFactory<>("mechanic"));
+        mechanicColumn.setCellFactory(column -> new TableCell<Appointment, Mechanic>() {
+            @Override
+            protected void updateItem(Mechanic mechanic, boolean empty) {
+                super.updateItem(mechanic, empty);
+                if (empty || mechanic == null) {
+                    setText(""); 
+                } else {
+                    setText(mechanic.getName() + 
+                           (mechanic.getSpecialization() != null ? " (" + mechanic.getSpecialization() + ")" : ""));
                 }
             }
         });
