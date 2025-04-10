@@ -35,6 +35,7 @@ import javafx.stage.FileChooser;
 import oracle.jdbc.OracleTypes;
 import java.io.File;
 import java.io.FileOutputStream;
+import javafx.application.Platform;
 
 public class ReportsTabController implements Initializable {
 
@@ -87,51 +88,96 @@ public class ReportsTabController implements Initializable {
     @FXML
     private TableView<ObservableList<Object>> reportTableView;
 
+    @FXML
+    private VBox totalRevenueBox;
+
+    @FXML
+    private TextField totalRevenueField;
+
     private Map<String, Integer> monthNameToNumber = new HashMap<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Set up month mapping
-        String[] months = {"January", "February", "March", "April", "May", "June", 
-                          "July", "August", "September", "October", "November", "December"};
+        String[] months = { "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December" };
         for (int i = 0; i < months.length; i++) {
             monthNameToNumber.put(months[i], i + 1);
         }
         
+        // Add "All Year" option to month combo box
+        ObservableList<String> monthOptions = FXCollections.observableArrayList();
+        monthOptions.add("All Year");  // Add full year option
+        monthOptions.addAll(months);
+        monthComboBox.setItems(monthOptions);
+
         // Set report type change event
         reportTypeComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                if ("Revenue Report".equals(newValue)) {
-                    revenueOptionsPane.setVisible(true);
-                    revenueOptionsPane.setManaged(true);
-                    invoiceOptionsPane.setVisible(false);
-                    invoiceOptionsPane.setManaged(false);
-                } else if ("Invoice Report".equals(newValue)) {
-                    invoiceOptionsPane.setVisible(true);
-                    invoiceOptionsPane.setManaged(true);
-                    revenueOptionsPane.setVisible(false);
-                    revenueOptionsPane.setManaged(false);
-                }
+                // Use Platform.runLater to ensure UI updates are completed
+                Platform.runLater(() -> {
+                    // First, clear the previous form data but keep the report type selection
+                    clearFormData();
+                    
+                    if ("Revenue Report".equals(newValue)) {
+                        revenueOptionsPane.setVisible(true);
+                        revenueOptionsPane.setManaged(true);
+                        invoiceOptionsPane.setVisible(false);
+                        invoiceOptionsPane.setManaged(false);
+                    } else if ("Invoice Report".equals(newValue)) {
+                        invoiceOptionsPane.setVisible(true);
+                        invoiceOptionsPane.setManaged(true);
+                        revenueOptionsPane.setVisible(false);
+                        revenueOptionsPane.setManaged(false);
+                    }
+                });
             }
         });
-        
+
         // Initialize year to current year
         yearField.setText(String.valueOf(LocalDate.now().getYear()));
-        
-        // Initialize month to current month
-        monthComboBox.setValue(months[LocalDate.now().getMonthValue() - 1]);
-        
+
+        // Initialize month to "All Year" as default
+        monthComboBox.setValue("All Year");
+
         // Initialize date pickers
         startDatePicker.setValue(LocalDate.now().minusMonths(1));
         endDatePicker.setValue(LocalDate.now());
-        
+
         // Load service types
         loadServiceTypes();
-        
+
         // Load customers
         loadCustomers();
-        
+
         // Initialize save report button
+        saveReportButton.setDisable(true);
+
+        totalRevenueBox.setVisible(false);
+        totalRevenueBox.setManaged(false);
+    }
+
+    // Add a method to clear form data but keep report type selection
+    private void clearFormData() {
+        yearField.setText(String.valueOf(LocalDate.now().getYear()));
+        monthComboBox.setValue("All Year");
+        serviceTypeComboBox.getSelectionModel().selectFirst(); // Select "All Service Types"
+        
+        invoiceIdField.clear();
+        customerComboBox.setValue(null);
+        statusComboBox.setValue("All");
+        totalRevenueField.clear();
+        
+        startDatePicker.setValue(LocalDate.now().minusMonths(1));
+        endDatePicker.setValue(LocalDate.now());
+        
+        clearTableView();
+        
+        // Hide total revenue box
+        totalRevenueBox.setVisible(false);
+        totalRevenueBox.setManaged(false);
+        
+        // Disable save report button
         saveReportButton.setDisable(true);
     }
 
@@ -139,26 +185,26 @@ public class ReportsTabController implements Initializable {
     private void loadServiceTypes() {
         try {
             ObservableList<ServiceTypeWrapper> serviceTypes = FXCollections.observableArrayList();
-            
+
             // Add "All Service Types" option
             serviceTypes.add(new ServiceTypeWrapper(0, "All Service Types"));
-            
-            // Directly create default service type options, consistent with ServiceFormController
+
+            // Directly create default service type options, consistent with
+            // ServiceFormController
             serviceTypes.addAll(
-                new ServiceTypeWrapper(1, "Regular Maintenance"),
-                new ServiceTypeWrapper(2, "Engine Repair"),
-                new ServiceTypeWrapper(3, "Transmission Repair"),
-                new ServiceTypeWrapper(4, "Brake Service"),
-                new ServiceTypeWrapper(5, "Electrical Repair"),
-                new ServiceTypeWrapper(6, "Air Conditioning"),
-                new ServiceTypeWrapper(7, "Suspension Work"),
-                new ServiceTypeWrapper(8, "Wheel and Tire Service"),
-                new ServiceTypeWrapper(9, "Diagnostic Service"),
-                new ServiceTypeWrapper(10, "Exhaust System Repair")
-            );
-            
+                    new ServiceTypeWrapper(1, "Regular Maintenance"),
+                    new ServiceTypeWrapper(2, "Engine Repair"),
+                    new ServiceTypeWrapper(3, "Transmission Repair"),
+                    new ServiceTypeWrapper(4, "Brake Service"),
+                    new ServiceTypeWrapper(5, "Electrical Repair"),
+                    new ServiceTypeWrapper(6, "Air Conditioning"),
+                    new ServiceTypeWrapper(7, "Suspension Work"),
+                    new ServiceTypeWrapper(8, "Wheel and Tire Service"),
+                    new ServiceTypeWrapper(9, "Diagnostic Service"),
+                    new ServiceTypeWrapper(10, "Exhaust System Repair"));
+
             serviceTypeComboBox.setItems(serviceTypes);
-            
+
             // Set default selection to "All Service Types"
             serviceTypeComboBox.getSelectionModel().selectFirst();
         } catch (Exception e) {
@@ -167,112 +213,269 @@ public class ReportsTabController implements Initializable {
         }
     }
 
-    private void loadCustomers() {
-        try {
+        private void loadCustomers() {
+            try {
             ObservableList<Customer> customers = FXCollections.observableArrayList();
             customers.addAll(CustomerDAO.getActiveCustomers());
             customerComboBox.setItems(customers);
-        } catch (Exception e) {
+            } catch (Exception e) {
             AlertDialog.showWarning("Error", "Failed to load customers: " + e.getMessage());
             e.printStackTrace();
-        }
-    }
-
-    @FXML
-    private void handleGenerateReport() {
-        String reportType = reportTypeComboBox.getValue();
-        if (reportType == null) {
-            AlertDialog.showWarning("Warning", "Please select a report type");
-            return;
+            }
         }
 
-        clearTableView();
-
-        try {
+        @FXML
+        private void handleGenerateReport() {
+            // Ensure that the value of reportTypeComboBox is updated
+            String reportType = reportTypeComboBox.getValue();
+            if (reportType == null) {
+                AlertDialog.showWarning("Warning", "Please select a report type");
+                return;
+            }
+        
+            // Ensure that the correct option pane is displayed according to the report type
             if ("Revenue Report".equals(reportType)) {
-                generateRevenueReport();
+                revenueOptionsPane.setVisible(true);
+                revenueOptionsPane.setManaged(true);
+                invoiceOptionsPane.setVisible(false);
+                invoiceOptionsPane.setManaged(false);
             } else if ("Invoice Report".equals(reportType)) {
-                generateInvoiceReport();
+                invoiceOptionsPane.setVisible(true);
+                invoiceOptionsPane.setManaged(true);
+                revenueOptionsPane.setVisible(false);
+                revenueOptionsPane.setManaged(false);
             }
-
-            saveReportButton.setDisable(false);
-        } catch (Exception e) {
-            AlertDialog.showError("Error", "Failed to generate report: " + e.getMessage());
-            e.printStackTrace();
+        
+            clearTableView();
+        
+            try {
+                if ("Revenue Report".equals(reportType)) {
+                    generateRevenueReport();
+                } else if ("Invoice Report".equals(reportType)) {
+                    generateInvoiceReport();
+                }
+        
+                saveReportButton.setDisable(false);
+            } catch (Exception e) {
+                AlertDialog.showError("Error", "Failed to generate report: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
-    }
 
-    private void generateRevenueReport() {
-        try {
-            int year = Integer.parseInt(yearField.getText());
-            int month = getMonthNumber(monthComboBox.getValue());
-            
-            ServiceTypeWrapper selectedServiceType = serviceTypeComboBox.getValue();
-            
-            if (selectedServiceType != null && selectedServiceType.getId() != 0) {
-                LocalDate startDate = LocalDate.of(year, month, 1);
-                LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        private void generateRevenueReport() {
+            try {
+                int year = Integer.parseInt(yearField.getText());
+                String monthSelection = monthComboBox.getValue();
+                boolean isFullYear = "All Year".equals(monthSelection);
+                int month = isFullYear ? 0 : getMonthNumber(monthSelection);
                 
-                String serviceTypeId = String.valueOf(selectedServiceType.getId()); 
+                ServiceTypeWrapper selectedServiceType = serviceTypeComboBox.getValue();
                 
-                HibernateUtil.callFunction(conn -> {
-                    try (CallableStatement stmt = conn.prepareCall("{ ? = call report_pkg.fn_revenue_report_by_service_type(?, ?, ?) }")) {
-                        stmt.registerOutParameter(1, OracleTypes.CURSOR);
-                        stmt.setString(2, serviceTypeId); 
-                        stmt.setDate(3, java.sql.Date.valueOf(startDate));
-                        stmt.setDate(4, java.sql.Date.valueOf(endDate));
-                        stmt.execute();
-                        
-                        try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
-                            populateTableFromResultSet(rs);
-                        }
-                    } catch (SQLException e) {
-                        throw new RuntimeException("Failed to execute revenue report by service type: " + e.getMessage(), e);
+                if (selectedServiceType != null && selectedServiceType.getId() != 0) {
+                    // Process report for specific service type
+                    LocalDate startDate;
+                    LocalDate endDate;
+                    
+                    if (isFullYear) {
+                        // Full year range: January 1 to December 31
+                        startDate = LocalDate.of(year, 1, 1);
+                        endDate = LocalDate.of(year, 12, 31);
+                    } else {
+                        // Specific month range
+                        startDate = LocalDate.of(year, month, 1);
+                        endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
                     }
-                    return null;
-                });
-            } else {
-                HibernateUtil.callFunction(conn -> {
-                    try (CallableStatement stmt = conn.prepareCall("{ ? = call report_pkg.fn_revenue_report(?, ?) }")) {
-                        stmt.registerOutParameter(1, OracleTypes.CURSOR);
-                        stmt.setInt(2, year);
-                        stmt.setInt(3, month);
-                        stmt.execute();
-                        
-                        try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
-                            populateTableFromResultSet(rs);
+                    
+                    String serviceTypeId = String.valueOf(selectedServiceType.getId());
+                    
+                    HibernateUtil.callFunction(conn -> {
+                        // Execute query for specific service type with date range
+                        try (CallableStatement stmt = conn
+                            .prepareCall("{ ? = call report_pkg.fn_revenue_report_by_service_type(?, ?, ?) }")) {
+                            stmt.registerOutParameter(1, OracleTypes.CURSOR);
+                            stmt.setString(2, serviceTypeId);
+                            stmt.setDate(3, java.sql.Date.valueOf(startDate));
+                            stmt.setDate(4, java.sql.Date.valueOf(endDate));
+                            stmt.execute();
+                            
+                            try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+                                // Process results and calculate total revenue
+                                processRevenueResultSet(rs);
+                            }
+                        } catch (SQLException e) {
+                            throw new RuntimeException(
+                                "Failed to execute revenue report by service type: " + e.getMessage(), e);
                         }
-                    } catch (SQLException e) {
-                        throw new RuntimeException("Failed to execute revenue report: " + e.getMessage(), e);
+                        return null;
+                    });
+                } else {
+                    // Process report for all service types
+                    if (isFullYear) {
+                        // Handle full year report for all service types
+                        LocalDate startDate = LocalDate.of(year, 1, 1);
+                        LocalDate endDate = LocalDate.of(year, 12, 31);
+                        
+                        HibernateUtil.callFunction(conn -> {
+                            try (CallableStatement stmt = conn
+                                    .prepareCall("{ ? = call report_pkg.fn_revenue_report_by_date_range(?, ?) }")) {
+                                stmt.registerOutParameter(1, OracleTypes.CURSOR);
+                                stmt.setDate(2, java.sql.Date.valueOf(startDate));
+                                stmt.setDate(3, java.sql.Date.valueOf(endDate));
+                                stmt.execute();
+                                
+                                try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+                                    // Process results and calculate total revenue
+                                    processRevenueResultSet(rs);
+                                }
+                            } catch (SQLException e) {
+                                throw new RuntimeException("Failed to execute annual revenue report: " + e.getMessage(), e);
+                            }
+                            return null;
+                        });
+                    } else {
+                        // Handle specific month report for all service types (existing code)
+                        HibernateUtil.callFunction(conn -> {
+                            try (CallableStatement stmt = conn.prepareCall("{ ? = call report_pkg.fn_revenue_report(?, ?) }")) {
+                                stmt.registerOutParameter(1, OracleTypes.CURSOR);
+                                stmt.setInt(2, year);
+                                stmt.setInt(3, month);
+                                stmt.execute();
+                                
+                                try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+                                    // Process results and calculate total revenue
+                                    processRevenueResultSet(rs);
+                                }
+                            } catch (SQLException e) {
+                                throw new RuntimeException("Failed to execute revenue report: " + e.getMessage(), e);
+                            }
+                            return null;
+                        });
                     }
-                    return null;
-                });
+                }
+                
+                // Show total revenue
+                totalRevenueBox.setVisible(true);
+                totalRevenueBox.setManaged(true);
+                
+                AlertDialog.showSuccess("Report Generated", 
+                    isFullYear ? "Annual revenue report generated successfully" : "Revenue report generated successfully");
+            } catch (NumberFormatException e) {
+                AlertDialog.showWarning("Input Error", "Please enter valid year");
+            } catch (Exception e) {
+                AlertDialog.showError("Error", "Failed to generate revenue report: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        // Add a helper method to process revenue report result sets
+        private void processRevenueResultSet(ResultSet rs) throws SQLException {
+            // First, save all data from the result set to a local collection
+            ObservableList<ObservableList<Object>> allRows = FXCollections.observableArrayList();
+            double totalRev = 0.0;
+            
+            // Read all rows and calculate total revenue
+            ResultSetMetaData metaData = rs.getMetaData();
+            int columnCount = metaData.getColumnCount();
+            
+            // Find the index of the total revenue column
+            int revenueColumnIndex = -1;
+            for (int i = 1; i <= columnCount; i++) {
+                if ("TOTAL_REVENUE".equalsIgnoreCase(metaData.getColumnName(i))) {
+                    revenueColumnIndex = i;
+                    break;
+                }
             }
             
-            AlertDialog.showSuccess("Report Generated", "Revenue report generated successfully");
-        } catch (NumberFormatException e) {
-            AlertDialog.showWarning("Input Error", "Please enter valid year");
-        } catch (Exception e) {
-            AlertDialog.showError("Error", "Failed to generate revenue report: " + e.getMessage());
-            e.printStackTrace();
+            while (rs.next()) {
+                // Add the current row to the collection
+                ObservableList<Object> row = FXCollections.observableArrayList();
+                for (int i = 1; i <= columnCount; i++) {
+                    try {
+                        Object value = rs.getObject(i);
+                        row.add(value);
+                    } catch (SQLException e) {
+                        // If getting the object fails, try getting it as a string
+                        try {
+                            String stringValue = rs.getString(i);
+                            row.add(stringValue);
+                        } catch (SQLException ex) {
+                            // If it still fails, add an empty string
+                            row.add("");
+                        }
+                    }
+                }
+                allRows.add(row);
+                
+                // Calculate total revenue
+                if (revenueColumnIndex > 0) {
+                    try {
+                        double revenue = rs.getDouble(revenueColumnIndex);
+                        totalRev += revenue;
+                    } catch (SQLException ex) {
+                        // Handle the case where the field is not found or the value conversion fails
+                    }
+                }
+            }
+            
+            // Set total revenue
+            totalRevenueField.setText(String.format("$%.2f", totalRev));
+            
+            // Populate the table
+                populateTableWithData(rs.getMetaData(), allRows);
+            }
+    
+        private void populateTableWithData(ResultSetMetaData metaData, ObservableList<ObservableList<Object>> data) throws SQLException {
+            // Clear the table
+            clearTableView();
+    
+            int columnCount = metaData.getColumnCount();
+    
+            // Create table columns
+            for (int i = 1; i <= columnCount; i++) {
+                final int columnIndex = i - 1;
+                String columnName = metaData.getColumnName(i);
+    
+                TableColumn<ObservableList<Object>, Object> column = new TableColumn<>(columnName);
+                column.setCellValueFactory(cellData -> {
+                    ObservableList<Object> row = cellData.getValue();
+                    if (columnIndex >= row.size()) {
+                        return new SimpleObjectProperty<>("");
+                    }
+                    Object value = row.get(columnIndex);
+                    if (value == null) {
+                        return new SimpleObjectProperty<>("");
+                    }
+                    return new SimpleObjectProperty<>(value);
+                });
+    
+                reportTableView.getColumns().add(column);
+            }
+    
+            reportTableView.setItems(data);
         }
-    }
+    
+            // Update getMonthNumber method to handle "All Year" option
+            private int getMonthNumber(String monthName) {
+            if ("All Year".equals(monthName)) {
+                return 0; // Use 0 to indicate full year
+            }
+            return monthNameToNumber.getOrDefault(monthName, 1);
+        }
 
     private void generateInvoiceReport() {
         try {
             String invoiceId = invoiceIdField.getText().trim();
-            
-            // Select different query methods depending on whether an invoice ID is specified
+
+            // If an invoice ID is specified, query the specific invoice directly
             if (!invoiceId.isEmpty()) {
-                // If an invoice ID is specified, query the specific invoice directly
                 int id = Integer.parseInt(invoiceId);
-                
+
                 HibernateUtil.callFunction(conn -> {
                     try (CallableStatement stmt = conn.prepareCall("{ ? = call report_pkg.fn_invoice_by_id(?) }")) {
                         stmt.registerOutParameter(1, OracleTypes.CURSOR);
                         stmt.setInt(2, id);
                         stmt.execute();
-                        
+
                         try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
                             populateTableFromResultSet(rs);
                         }
@@ -285,83 +488,79 @@ public class ReportsTabController implements Initializable {
                 // Query invoices based on conditions
                 LocalDate startDate = startDatePicker.getValue();
                 LocalDate endDate = endDatePicker.getValue();
-                String statusValue = statusComboBox.getValue();
-                
-                // Convert status code
-                String statusCode = null;
-                if (statusValue != null && !statusValue.equals("All")) {
-                    if ("Scheduled".equals(statusValue)) statusCode = "S";
-                    else if ("In Progress".equals(statusValue)) statusCode = "I";
-                    else if ("Completed".equals(statusValue)) statusCode = "C";
-                    else if ("Canceled".equals(statusValue)) statusCode = "X";
-                }
                 
                 // Check if a customer is selected
                 Customer selectedCustomer = customerComboBox.getValue();
-                
-                // If a specific customer is selected
-                if (selectedCustomer != null) {
-                    final int customerId = selectedCustomer.getCustomerId();
-                    
+                if (selectedCustomer == null) {
+                    AlertDialog.showWarning("Input Error", "Please select a customer for invoice report");
+                    return;
+                }
+
+                final int customerId = selectedCustomer.getCustomerId();
+                String statusValue = statusComboBox.getValue();
+
+                // Convert status code
+                String statusCode = null;
+                if (statusValue != null && !statusValue.equals("All")) {
+                    if ("Scheduled".equals(statusValue))
+                        statusCode = "S";
+                    else if ("In Progress".equals(statusValue))
+                        statusCode = "I";
+                    else if ("Completed".equals(statusValue))
+                        statusCode = "C";
+                    else if ("Canceled".equals(statusValue))
+                        statusCode = "X";
+                }
+
+                // If a specific status is selected
+                if (statusCode != null) {
+                    final String finalStatusCode = statusCode;
+
                     HibernateUtil.callFunction(conn -> {
-                        try (CallableStatement stmt = conn.prepareCall("{ ? = call report_pkg.fn_invoices_by_customer(?, ?, ?) }")) {
+                        try (CallableStatement stmt = conn
+                                .prepareCall("{ ? = call report_pkg.fn_invoices_by_customer_and_status(?, ?, ?, ?) }")) {
+                            stmt.registerOutParameter(1, OracleTypes.CURSOR);
+                            stmt.setInt(2, customerId);
+                            stmt.setString(3, finalStatusCode);
+                            stmt.setDate(4, java.sql.Date.valueOf(startDate));
+                            stmt.setDate(5, java.sql.Date.valueOf(endDate));
+                            stmt.execute();
+
+                            try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+                                populateTableFromResultSet(rs);
+                            }
+                        } catch (SQLException e) {
+                            throw new RuntimeException("Failed to execute invoice report by customer and status: " + e.getMessage(),
+                                    e);
+                        }
+                        return null;
+                    });
+                }
+                // Otherwise, query invoices for all statuses
+                else {
+                    HibernateUtil.callFunction(conn -> {
+                        try (CallableStatement stmt = conn
+                                .prepareCall("{ ? = call report_pkg.fn_invoices_by_customer(?, ?, ?) }")) {
                             stmt.registerOutParameter(1, OracleTypes.CURSOR);
                             stmt.setInt(2, customerId);
                             stmt.setDate(3, java.sql.Date.valueOf(startDate));
                             stmt.setDate(4, java.sql.Date.valueOf(endDate));
                             stmt.execute();
-                            
+
                             try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
                                 populateTableFromResultSet(rs);
                             }
                         } catch (SQLException e) {
-                            throw new RuntimeException("Failed to execute invoice report by customer: " + e.getMessage(), e);
+                            throw new RuntimeException(
+                                    "Failed to execute invoice report by customer: " + e.getMessage(), e);
                         }
                         return null;
                     });
                 }
-                // If a specific status is selected
-                else if (statusCode != null) {
-                    final String finalStatusCode = statusCode;
-                    
-                    HibernateUtil.callFunction(conn -> {
-                        try (CallableStatement stmt = conn.prepareCall("{ ? = call report_pkg.fn_invoices_by_status(?, ?, ?) }")) {
-                            stmt.registerOutParameter(1, OracleTypes.CURSOR);
-                            stmt.setString(2, finalStatusCode);
-                            stmt.setDate(3, java.sql.Date.valueOf(startDate));
-                            stmt.setDate(4, java.sql.Date.valueOf(endDate));
-                            stmt.execute();
-                            
-                            try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
-                                populateTableFromResultSet(rs);
-                            }
-                        } catch (SQLException e) {
-                            throw new RuntimeException("Failed to execute invoice report by status: " + e.getMessage(), e);
-                        }
-                        return null;
-                    });
-                }
-                // Otherwise, query all invoices within the date range
-                else {
-                    HibernateUtil.callFunction(conn -> {
-                        try (CallableStatement stmt = conn.prepareCall("{ ? = call report_pkg.fn_revenue_report_by_date_range(?, ?) }")) {
-                            stmt.registerOutParameter(1, OracleTypes.CURSOR);
-                            stmt.setDate(2, java.sql.Date.valueOf(startDate));
-                            stmt.setDate(3, java.sql.Date.valueOf(endDate));
-                            stmt.execute();
-                            
-                            try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
-                                populateTableFromResultSet(rs);
-                            }
-                        } catch (SQLException e) {
-                            throw new RuntimeException("Failed to execute invoice report by date range: " + e.getMessage(), e);
-                        }
-                        return null;
-                    });
-                }
+                
+                AlertDialog.showSuccess("Report Generated", "Invoice report generated successfully for customer: " 
+                        + selectedCustomer.getName());
             }
-            
-            AlertDialog.showSuccess("Report Generated", "Invoice report generated successfully");
         } catch (NumberFormatException e) {
             AlertDialog.showWarning("Input Error", "Please enter valid invoice ID");
         } catch (Exception e) {
@@ -382,39 +581,47 @@ public class ReportsTabController implements Initializable {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Save PDF Report");
             fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("PDF Files", "*.pdf")
-            );
-            
+                    new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+
             // Set default file name
-            String defaultFileName = "report_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".pdf";
+            String defaultFileName = "report_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+                    + ".pdf";
             fileChooser.setInitialFileName(defaultFileName);
-            
+
             // Show save file dialog
             File file = fileChooser.showSaveDialog(reportTableView.getScene().getWindow());
-            
+
             if (file != null) {
                 // Create a PDF document
                 Document document = new Document();
                 PdfWriter.getInstance(document, new FileOutputStream(file));
                 document.open();
-                
+
                 // Add title
                 String reportTitle = reportTypeComboBox.getValue() != null ? reportTypeComboBox.getValue() : "Report";
                 Paragraph title = new Paragraph(reportTitle, new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD));
                 title.setAlignment(Element.ALIGN_CENTER);
                 document.add(title);
                 document.add(new Paragraph(" ")); // Blank line
-                
+
                 // Add report generation time
                 document.add(new Paragraph("Generated on: " + LocalDateTime.now().format(
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                )));
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
                 document.add(new Paragraph(" ")); // Blank line
-                
+
+                // Add total revenue info if this is a revenue report
+                if ("Revenue Report".equals(reportTypeComboBox.getValue()) && totalRevenueBox.isVisible()) {
+                    Font boldFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
+                    Paragraph revenueParagraph = new Paragraph("Total Revenue: " + totalRevenueField.getText(), boldFont);
+                    revenueParagraph.setAlignment(Element.ALIGN_RIGHT);
+                    document.add(revenueParagraph);
+                    document.add(new Paragraph(" ")); // Blank line
+                }
+
                 // Create a PDF table
                 PdfPTable pdfTable = new PdfPTable(reportTableView.getColumns().size());
                 pdfTable.setWidthPercentage(100);
-                
+
                 // Add table headers
                 for (TableColumn<ObservableList<Object>, ?> column : reportTableView.getColumns()) {
                     PdfPCell header = new PdfPCell(new Phrase(column.getText()));
@@ -422,7 +629,7 @@ public class ReportsTabController implements Initializable {
                     header.setBackgroundColor(BaseColor.LIGHT_GRAY);
                     pdfTable.addCell(header);
                 }
-                
+
                 // Add data rows
                 for (ObservableList<Object> row : reportTableView.getItems()) {
                     for (int i = 0; i < row.size(); i++) {
@@ -431,14 +638,24 @@ public class ReportsTabController implements Initializable {
                         pdfTable.addCell(cellText);
                     }
                 }
-                
+
                 // Add table to PDF
                 document.add(pdfTable);
-                
+
+                // Add summary at the end if this is a revenue report
+                if ("Revenue Report".equals(reportTypeComboBox.getValue()) && totalRevenueBox.isVisible()) {
+                    document.add(new Paragraph(" ")); // Blank line
+                    Font boldFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
+                    Paragraph summaryParagraph = new Paragraph("Total Revenue Summary: " + totalRevenueField.getText(), boldFont);
+                    summaryParagraph.setAlignment(Element.ALIGN_RIGHT);
+                    document.add(summaryParagraph);
+                }
+
                 // Close the document
                 document.close();
-                
-                AlertDialog.showSuccess("Export Successful", "The report has been successfully exported as a PDF file: " + file.getName());
+
+                AlertDialog.showSuccess("Export Successful",
+                        "The report has been successfully exported as a PDF file: " + file.getName());
             }
         } catch (Exception e) {
             AlertDialog.showError("Export Error", "Failed to export PDF report: " + e.getMessage());
@@ -453,6 +670,8 @@ public class ReportsTabController implements Initializable {
         revenueOptionsPane.setManaged(false);
         invoiceOptionsPane.setVisible(false);
         invoiceOptionsPane.setManaged(false);
+        totalRevenueBox.setVisible(false);
+        totalRevenueBox.setManaged(false);
 
         yearField.setText(String.valueOf(LocalDate.now().getYear()));
         monthComboBox.setValue("January");
@@ -461,6 +680,7 @@ public class ReportsTabController implements Initializable {
         invoiceIdField.clear();
         customerComboBox.setValue(null);
         statusComboBox.setValue("All");
+        totalRevenueField.clear();
 
         startDatePicker.setValue(LocalDate.now().minusMonths(1));
         endDatePicker.setValue(LocalDate.now());
@@ -475,7 +695,8 @@ public class ReportsTabController implements Initializable {
         reportTableView.getItems().clear();
     }
 
-    // Modify populateTableFromResultSet method to enhance error handling and data type conversion security
+    // Modify populateTableFromResultSet method to enhance error handling and data
+    // type conversion security
     private void populateTableFromResultSet(ResultSet rs) throws SQLException {
         // Clear the table
         clearTableView();
@@ -527,9 +748,5 @@ public class ReportsTabController implements Initializable {
         }
 
         reportTableView.setItems(data);
-    }
-
-    private int getMonthNumber(String monthName) {
-        return monthNameToNumber.getOrDefault(monthName, 1);
     }
 }

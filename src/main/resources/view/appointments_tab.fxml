@@ -15,6 +15,7 @@
                 <TableColumn fx:id="timeColumn" prefWidth="100.0" text="Time" />
                 <TableColumn fx:id="serviceTypeColumn" prefWidth="150.0" text="Service Type" />
                 <TableColumn fx:id="statusColumn" prefWidth="100.0" text="Status" />
+                <TableColumn fx:id="mechanicColumn" prefWidth="150.0" text="Mechanic" />
             </columns>
             <BorderPane.margin>
                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

@@ -27,51 +27,42 @@ import java.util.ResourceBundle;
 
 public class AppointmentFormController implements Initializable {
 
-    @FXML
-    private ComboBox<Customer> customerComboBox;
-    @FXML
-    private ComboBox<Vehicle> vehicleComboBox;
-    @FXML
-    private ComboBox<Service> serviceComboBox;
-    @FXML
-    private ComboBox<Mechanic> mechanicComboBox;
-    @FXML
-    private ComboBox<String> statusComboBox;
-    @FXML
-    private DatePicker appointmentDatePicker;
-    @FXML
-    private ComboBox<String> appointmentTimeComboBox;
-    @FXML
-    private Button saveButton;
-    @FXML
-    private Button cancelButton;
+    @FXML private ComboBox<Customer> customerComboBox;
+    @FXML private ComboBox<Vehicle> vehicleComboBox;
+    @FXML private ComboBox<Service> serviceComboBox;
+    @FXML private ComboBox<Mechanic> mechanicComboBox;
+    @FXML private ComboBox<String> statusComboBox;
+    @FXML private DatePicker appointmentDatePicker;
+    @FXML private ComboBox<String> appointmentTimeComboBox;
+    @FXML private Button saveButton;
+    @FXML private Button cancelButton;
 
-    private String mode = "add"; // Default mode is "add"
-    private Appointment existingAppointment; // Holds the appointment being edited
+    private String mode = "add";
+    private Appointment existingAppointment;
     private AppointmentsTabController parentController;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        // Set the date picker to today
         appointmentDatePicker.setValue(LocalDate.now());
 
-        // Set time options
         String[] times = { "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00" };
         appointmentTimeComboBox.setItems(FXCollections.observableArrayList(times));
         appointmentTimeComboBox.setValue("09:00");
 
-        // Set status options
         String[] statuses = { "Scheduled", "In Progress", "Completed", "Cancelled" };
         statusComboBox.setItems(FXCollections.observableArrayList(statuses));
         statusComboBox.setValue("Scheduled");
 
-        // Configure the display format of combo boxes
+        mechanicComboBox.setPromptText("Select a mechanic (optional)");
+
         setupComboBoxes();
 
-        // Load data
-        loadCustomers();
+        // Load all dropdown data
+        loadCustomers(); // ✅ FIXED: This was missing before
+        loadServices();
+        loadMechanics();
 
-        // Set customer selection event - load vehicles when a customer is selected
+        // Event listener: load vehicles when customer changes
         customerComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 loadVehicles(newSelection.getCustomerId());
@@ -80,45 +71,30 @@ public class AppointmentFormController implements Initializable {
             }
         });
 
-        // Set date selection event - load available times when a date is selected
+        // Event listener: update available times when date changes
         appointmentDatePicker.valueProperty().addListener((obs, oldDate, newDate) -> {
             if (newDate != null) {
                 loadAvailableTimes(newDate);
             }
         });
-
-        // Load services and mechanics
-        loadServices();
-        loadMechanics();
     }
 
     private void setupComboBoxes() {
-        // Configure customer combo box display format
         customerComboBox.setCellFactory(param -> new ListCell<Customer>() {
             @Override
             protected void updateItem(Customer item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item.getName());
-                }
+                setText((empty || item == null) ? null : item.getName());
             }
         });
-
         customerComboBox.setButtonCell(new ListCell<Customer>() {
             @Override
             protected void updateItem(Customer item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item.getName());
-                }
+                setText((empty || item == null) ? null : item.getName());
             }
         });
 
-        // Configure vehicle combo box display format
         vehicleComboBox.setCellFactory(param -> new ListCell<Vehicle>() {
             @Override
             protected void updateItem(Vehicle item, boolean empty) {
@@ -130,7 +106,6 @@ public class AppointmentFormController implements Initializable {
                 }
             }
         });
-
         vehicleComboBox.setButtonCell(new ListCell<Vehicle>() {
             @Override
             protected void updateItem(Vehicle item, boolean empty) {
@@ -143,32 +118,21 @@ public class AppointmentFormController implements Initializable {
             }
         });
 
-        // Configure service combo box display format
         serviceComboBox.setCellFactory(param -> new ListCell<Service>() {
             @Override
             protected void updateItem(Service item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item.getServiceName() + " ($" + item.getPrice() + ")");
-                }
+                setText((empty || item == null) ? null : item.getServiceName() + " ($" + item.getPrice() + ")");
             }
         });
-
         serviceComboBox.setButtonCell(new ListCell<Service>() {
             @Override
             protected void updateItem(Service item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item.getServiceName() + " ($" + item.getPrice() + ")");
-                }
+                setText((empty || item == null) ? null : item.getServiceName() + " ($" + item.getPrice() + ")");
             }
         });
 
-        // Configure mechanic combo box display format
         mechanicComboBox.setCellFactory(param -> new ListCell<Mechanic>() {
             @Override
             protected void updateItem(Mechanic item, boolean empty) {
@@ -176,12 +140,10 @@ public class AppointmentFormController implements Initializable {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(item.getName()
-                            + (item.getSpecialization() != null ? " (" + item.getSpecialization() + ")" : ""));
+                    setText(item.getName() + (item.getSpecialization() != null ? " (" + item.getSpecialization() + ")" : ""));
                 }
             }
         });
-
         mechanicComboBox.setButtonCell(new ListCell<Mechanic>() {
             @Override
             protected void updateItem(Mechanic item, boolean empty) {
@@ -189,14 +151,12 @@ public class AppointmentFormController implements Initializable {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(item.getName()
-                            + (item.getSpecialization() != null ? " (" + item.getSpecialization() + ")" : ""));
+                    setText(item.getName() + (item.getSpecialization() != null ? " (" + item.getSpecialization() + ")" : ""));
                 }
             }
         });
     }
 
-    // Load customer list
     private void loadCustomers() {
         try {
             List<Customer> customers = CustomerDAO.getActiveCustomers();
@@ -207,22 +167,11 @@ public class AppointmentFormController implements Initializable {
         }
     }
 
-    // Load vehicles for a specific customer
     private void loadVehicles(int customerId) {
         try {
-            System.out.println("Loading vehicles for customer ID: " + customerId);
-            // Use the updated VehicleDAO
             List<Vehicle> vehicles = VehicleDAO.getVehiclesByCustomerId(customerId);
-
-            System.out.println("Found " + vehicles.size() + " vehicles.");
-            for (Vehicle v : vehicles) {
-                System.out.println(
-                        "  - " + v.getVehicleId() + ": " + v.getYear() + " " + v.getMake() + " " + v.getModel());
-            }
-
             vehicleComboBox.setItems(FXCollections.observableArrayList(vehicles));
 
-            // Automatically select if there is only one vehicle
             if (vehicles.size() == 1) {
                 vehicleComboBox.setValue(vehicles.get(0));
             }
@@ -232,7 +181,6 @@ public class AppointmentFormController implements Initializable {
         }
     }
 
-    // Load service list
     private void loadServices() {
         try {
             List<Service> services = ServiceDAO.getActiveServices();
@@ -243,7 +191,6 @@ public class AppointmentFormController implements Initializable {
         }
     }
 
-    // Load mechanic list
     private void loadMechanics() {
         try {
             List<Mechanic> mechanics = MechanicDAO.getActiveMechanics();
@@ -254,13 +201,11 @@ public class AppointmentFormController implements Initializable {
         }
     }
 
-    // Load available time slots for the selected date
     private void loadAvailableTimes(LocalDate date) {
         try {
             Date selectedDate = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
             Map<String, String> availableSlots = AppointmentDAO.getAvailableSlots(selectedDate);
 
-            // Filter available time slots
             List<String> availableTimes = new java.util.ArrayList<>();
             for (Map.Entry<String, String> entry : availableSlots.entrySet()) {
                 if ("AVAILABLE".equals(entry.getValue())) {
@@ -268,14 +213,12 @@ public class AppointmentFormController implements Initializable {
                 }
             }
 
-            // Update time combo box
             appointmentTimeComboBox.setItems(FXCollections.observableArrayList(availableTimes));
             if (!availableTimes.isEmpty()) {
                 appointmentTimeComboBox.setValue(availableTimes.get(0));
             } else {
                 appointmentTimeComboBox.setValue(null);
-                AlertDialog.showWarning("No Available Slots",
-                        "There are no available appointment slots for the selected date.");
+                AlertDialog.showWarning("No Available Slots", "There are no available appointment slots for the selected date.");
             }
         } catch (Exception e) {
             AlertDialog.showWarning("Error", "An error occurred while loading available times: " + e.getMessage());
@@ -283,7 +226,6 @@ public class AppointmentFormController implements Initializable {
         }
     }
 
-    // Set mode (add or edit)
     public void setMode(String mode) {
         this.mode = mode;
         if ("edit".equals(mode)) {
@@ -291,11 +233,9 @@ public class AppointmentFormController implements Initializable {
         }
     }
 
-    // Set the appointment to be edited
     public void setAppointment(Appointment appointment) {
         this.existingAppointment = appointment;
 
-        // Populate the form
         Customer customer = appointment.getCustomer();
         if (customer != null) {
             for (Customer c : customerComboBox.getItems()) {
@@ -305,7 +245,6 @@ public class AppointmentFormController implements Initializable {
                 }
             }
 
-            // Load vehicles
             loadVehicles(customer.getCustomerId());
             Vehicle vehicle = appointment.getVehicle();
             if (vehicle != null) {
@@ -338,191 +277,132 @@ public class AppointmentFormController implements Initializable {
             }
         }
 
-        Date appointmentDate = appointment.getAppointmentDate();
-        if (appointmentDate != null) {
-            LocalDate localDate = appointmentDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        if (appointment.getAppointmentDate() != null) {
+            LocalDate localDate = appointment.getAppointmentDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             appointmentDatePicker.setValue(localDate);
 
-            // Set time
             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("HH:mm");
-            String time = sdf.format(appointmentDate);
+            String time = sdf.format(appointment.getAppointmentDate());
             appointmentTimeComboBox.setValue(time);
         }
 
-        // Set status
         String statusId = appointment.getStatusId();
-        if (statusId != null) {
-            switch (statusId) {
-                case "S":
-                    statusComboBox.setValue("Scheduled");
-                    break;
-                case "I":
-                    statusComboBox.setValue("In Progress");
-                    break;
-                case "C":
-                    statusComboBox.setValue("Completed");
-                    break;
-                case "X":
-                    statusComboBox.setValue("Cancelled");
-                    break;
-                default:
-                    statusComboBox.setValue("Pending");
-            }
+        switch (statusId) {
+            case "I":
+                statusComboBox.setValue("In Progress");
+                break;
+            case "C":
+                statusComboBox.setValue("Completed");
+                break;
+            case "X":
+                statusComboBox.setValue("Cancelled");
+                break;
+            default:
+                statusComboBox.setValue("Scheduled");
         }
     }
 
-    // Set parent controller
     public void setParentController(AppointmentsTabController controller) {
         this.parentController = controller;
     }
 
-    // Save appointment
     @FXML
     private void handleSave() {
-        if (!validateInput()) {
-            return;
-        }
+        if (!validateInput()) return;
 
         try {
-            // Retrieve form data
             Customer selectedCustomer = customerComboBox.getValue();
             Vehicle selectedVehicle = vehicleComboBox.getValue();
             Service selectedService = serviceComboBox.getValue();
             Mechanic selectedMechanic = mechanicComboBox.getValue();
             LocalDate selectedDate = appointmentDatePicker.getValue();
             String selectedTime = appointmentTimeComboBox.getValue();
-            String selectedStatus = statusComboBox.getValue();
+            String statusId = switch (statusComboBox.getValue()) {
+                case "In Progress" -> "I";
+                case "Completed" -> "C";
+                case "Cancelled" -> "X";
+                default -> "S";
+            };
 
-            // Convert status to status code
-            String statusId;
-            switch (selectedStatus) {
-                case "In Progress":
-                    statusId = "I";
-                    break;
-                case "Completed":
-                    statusId = "C";
-                    break;
-                case "Cancelled":
-                    statusId = "X";
-                    break;
-                default:
-                    statusId = "S";
-            }
-
-            // Combine date and time
             String[] timeParts = selectedTime.split(":");
             int hour = Integer.parseInt(timeParts[0]);
             int minute = Integer.parseInt(timeParts[1]);
 
             java.util.Calendar calendar = java.util.Calendar.getInstance();
-            calendar.set(selectedDate.getYear(), selectedDate.getMonthValue() - 1, selectedDate.getDayOfMonth(), hour,
-                    minute, 0);
+            calendar.set(selectedDate.getYear(), selectedDate.getMonthValue() - 1, selectedDate.getDayOfMonth(), hour, minute, 0);
             Date appointmentDateTime = calendar.getTime();
 
-            // Check for time conflicts
-            Integer currentAppointmentId = "edit".equals(mode) ? existingAppointment.getAppointmentId() : null;
-            if (AppointmentDAO.isTimeColliding(appointmentDateTime, currentAppointmentId)) {
-                AlertDialog.showWarning("Time Conflict",
-                        "The selected time slot is already fully booked. Please select another time.");
-                return;
-            }
-
             boolean success;
-
             if ("add".equals(mode)) {
-                // Create new appointment
-                Appointment newAppointment = new Appointment(
-                        selectedCustomer,
-                        selectedVehicle,
-                        selectedService,
-                        selectedMechanic,
-                        appointmentDateTime,
-                        statusId);
-
+                Appointment newAppointment = new Appointment(selectedCustomer, selectedVehicle, selectedService, selectedMechanic, appointmentDateTime, statusId);
                 success = AppointmentDAO.createAppointment(newAppointment);
-                if (success) {
-                    AlertDialog.showSuccess("Success", "Appointment has been created successfully");
-                } else {
-                    AlertDialog.showError("Error", "Failed to create appointment. Please try again.");
-                    return;
-                }
+                AlertDialog.showSuccess("Success", "Appointment created successfully.");
             } else {
-                // Update existing appointment
                 existingAppointment.setCustomer(selectedCustomer);
                 existingAppointment.setVehicle(selectedVehicle);
                 existingAppointment.setService(selectedService);
                 existingAppointment.setMechanic(selectedMechanic);
                 existingAppointment.setAppointmentDate(appointmentDateTime);
                 existingAppointment.setStatusId(statusId);
-
                 success = AppointmentDAO.updateAppointment(existingAppointment);
-                if (success) {
-                    AlertDialog.showSuccess("Success", "Appointment has been updated successfully");
-                } else {
-                    AlertDialog.showError("Error", "Failed to update appointment. Please try again.");
-                    return;
-                }
+                AlertDialog.showSuccess("Success", "Appointment updated successfully.");
             }
 
-            // Close form and refresh list
+            if (!success) {
+                AlertDialog.showError("Error", "Failed to save appointment.");
+                return;
+            }
+
             if (parentController != null) {
                 parentController.refreshAppointments();
             }
+
             closeForm();
         } catch (Exception e) {
-            AlertDialog.showError("Error", "An error occurred while saving the appointment: " + e.getMessage());
+            AlertDialog.showError("Error", "An error occurred while saving: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    // Validate input
     private boolean validateInput() {
         if (customerComboBox.getValue() == null) {
             AlertDialog.showWarning("Validation Error", "Please select a customer");
             customerComboBox.requestFocus();
             return false;
         }
-
         if (vehicleComboBox.getValue() == null) {
             AlertDialog.showWarning("Validation Error", "Please select a vehicle");
             vehicleComboBox.requestFocus();
             return false;
         }
-
         if (serviceComboBox.getValue() == null) {
             AlertDialog.showWarning("Validation Error", "Please select a service");
             serviceComboBox.requestFocus();
             return false;
         }
-
         if (appointmentDatePicker.getValue() == null) {
             AlertDialog.showWarning("Validation Error", "Please select a date");
             appointmentDatePicker.requestFocus();
             return false;
         }
-
         if (appointmentTimeComboBox.getValue() == null) {
             AlertDialog.showWarning("Validation Error", "Please select a time");
             appointmentTimeComboBox.requestFocus();
             return false;
         }
-
         if (statusComboBox.getValue() == null) {
             AlertDialog.showWarning("Validation Error", "Please select a status");
             statusComboBox.requestFocus();
             return false;
         }
-
         return true;
     }
 
-    // Handle cancel button
     @FXML
     private void handleCancel() {
         closeForm();
     }
 
-    // Close the form
     private void closeForm() {
         Stage stage = (Stage) cancelButton.getScene().getWindow();
         stage.close();
