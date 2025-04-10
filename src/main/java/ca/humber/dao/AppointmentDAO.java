@@ -119,7 +119,10 @@ public class AppointmentDAO {
             Throwable cause = e;
             while (cause != null) {
                 if (cause.getMessage() != null && cause.getMessage().contains("ORA-02291")) {
-                    System.err.println("Foreign key constraint error: Referenced record does not exist");
+                    throw  new RuntimeException("Foreign key constraint error: Referenced record does not exist");
+                }
+                else if (cause.getMessage() != null && cause.getMessage().contains("ORA-20001")) {
+                    throw  new RuntimeException("Low Stock Alert: Not enough inventory for the service");
                 }
                 cause = cause.getCause();
             }
