@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -14,6 +16,8 @@ import ca.humber.dao.CustomerDAO;
 import ca.humber.model.Customer;
 import ca.humber.model.ServiceTypeWrapper;
 import ca.humber.util.HibernateUtil;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.*;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -27,7 +31,10 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import oracle.jdbc.OracleTypes;
+import java.io.File;
+import java.io.FileOutputStream;
 
 public class ReportsTabController implements Initializable {
 
@@ -366,13 +373,77 @@ public class ReportsTabController implements Initializable {
     @FXML
     private void handleSaveReport() {
         if (reportTableView.getItems().isEmpty()) {
-            AlertDialog.showWarning("Warning", "No report data to save");
+            AlertDialog.showWarning("Warning", "No report data available for export");
             return;
         }
 
-        AlertDialog.showSuccess("Save Report Test",
-                "This is a test of the save report functionality. In production, this would save the report to a file.");
-
+        try {
+            // Create a file chooser
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save PDF Report");
+            fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("PDF Files", "*.pdf")
+            );
+            
+            // Set default file name
+            String defaultFileName = "report_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".pdf";
+            fileChooser.setInitialFileName(defaultFileName);
+            
+            // Show save file dialog
+            File file = fileChooser.showSaveDialog(reportTableView.getScene().getWindow());
+            
+            if (file != null) {
+                // Create a PDF document
+                Document document = new Document();
+                PdfWriter.getInstance(document, new FileOutputStream(file));
+                document.open();
+                
+                // Add title
+                String reportTitle = reportTypeComboBox.getValue() != null ? reportTypeComboBox.getValue() : "Report";
+                Paragraph title = new Paragraph(reportTitle, new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD));
+                title.setAlignment(Element.ALIGN_CENTER);
+                document.add(title);
+                document.add(new Paragraph(" ")); // Blank line
+                
+                // Add report generation time
+                document.add(new Paragraph("Generated on: " + LocalDateTime.now().format(
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                )));
+                document.add(new Paragraph(" ")); // Blank line
+                
+                // Create a PDF table
+                PdfPTable pdfTable = new PdfPTable(reportTableView.getColumns().size());
+                pdfTable.setWidthPercentage(100);
+                
+                // Add table headers
+                for (TableColumn<ObservableList<Object>, ?> column : reportTableView.getColumns()) {
+                    PdfPCell header = new PdfPCell(new Phrase(column.getText()));
+                    header.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    header.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                    pdfTable.addCell(header);
+                }
+                
+                // Add data rows
+                for (ObservableList<Object> row : reportTableView.getItems()) {
+                    for (int i = 0; i < row.size(); i++) {
+                        Object cellValue = row.get(i);
+                        String cellText = cellValue != null ? cellValue.toString() : "";
+                        pdfTable.addCell(cellText);
+                    }
+                }
+                
+                // Add table to PDF
+                document.add(pdfTable);
+                
+                // Close the document
+                document.close();
+                
+                AlertDialog.showSuccess("Export Successful", "The report has been successfully exported as a PDF file: " + file.getName());
+            }
+        } catch (Exception e) {
+            AlertDialog.showError("Export Error", "Failed to export PDF report: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML
