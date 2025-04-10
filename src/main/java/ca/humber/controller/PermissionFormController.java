@@ -35,7 +35,7 @@ public class PermissionFormController implements Initializable {
 	private RolePermission existingRolePermission;
 
 	String[] tableNames = { "APPOINTMENT", "CUSTOMER", "INVENTORY", "MECHANIC", "SERVICE", "USER_ROLE", "USERS",
-			"VEHICLE" };
+			"VEHICLE", "REPORT" };
 
 	@Override
 	public void initialize(URL url, ResourceBundle resourceBundle) {
