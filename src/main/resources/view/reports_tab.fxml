@@ -149,6 +149,14 @@
                     </BorderPane.margin>
                 </TableView>
             </center>
+            <bottom>
+                <VBox fx:id="totalRevenueBox" spacing="5">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Total Revenue:" styleClass="label-bold"/>
+                        <TextField fx:id="totalRevenueField" editable="false" prefWidth="150"/>
+                    </HBox>
+                </VBox>
+            </bottom>
         </BorderPane>
     </center>
 </BorderPane>
