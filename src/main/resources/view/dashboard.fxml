@@ -14,8 +14,8 @@
                     <!-- Admin Only Menu -->
                     <Menu fx:id="adminMenu" text="Admin">
                         <items>
-                            <MenuItem onAction="#handleUserManagement" text="User Management" />
-                            <MenuItem onAction="#handleRoleManagement" text="Role Management" />
+                            <MenuItem fx:id="USERS" onAction="#handleUserManagement" text="User Management" />
+                            <MenuItem fx:id="USER_ROLE" onAction="#handleRoleManagement" text="Role Management" />
                         </items>
                     </Menu>
 
@@ -42,42 +42,42 @@
     <center>
         <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
             <tabs>
-                <Tab text="Appointments">
+                <Tab fx:id="APPOINTMENT" text="Appointments">
                     <content>
                         <fx:include source="appointments_tab.fxml" />
                     </content>
                 </Tab>
-                <Tab text="Customers">
+                <Tab fx:id="CUSTOMER" text="Customers">
                     <content>
                         <fx:include source="customers_tab.fxml" />
                     </content>
                 </Tab>
-                <Tab text="Vehicles">
+                <Tab fx:id="VEHICLE" text="Vehicles">
                     <content>
                         <fx:include source="vehicles_tab.fxml" />
                     </content>
                 </Tab>
-                <Tab text="Inventory">
+                <Tab fx:id="INVENTORY" text="Inventory">
                     <content>
                         <fx:include source="inventory_tab.fxml" />
                     </content>
                 </Tab>
-                <Tab text="Mechanics">
+                <Tab fx:id="MECHANIC" text="Mechanics">
                     <content>
                         <fx:include source="mechanics_tab.fxml" />
                     </content>
                 </Tab>
-                <Tab text="Service">
+                <Tab fx:id="SERVICE" text="Service">
                     <content>
                         <fx:include source="service_tab.fxml" />
                     </content>
                 </Tab>
-                <Tab text="Service Inventory">
+                <Tab fx:id="SERVICE_INVENTORY" text="Service Inventory">
                     <content>
                         <fx:include source="service_inventory_tab.fxml" />
                     </content>
                 </Tab>
-                <Tab text="Reports">
+                <Tab fx:id="REPORT" text="Reports">
                     <content>
                         <fx:include source="reports_tab.fxml" />
                     </content>
