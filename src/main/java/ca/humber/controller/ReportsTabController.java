@@ -1,37 +1,18 @@
 package ca.humber.controller;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.URL;
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
-
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.ColumnText;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfPageEventHelper;
-import com.itextpdf.text.pdf.PdfWriter;
 
 import ca.humber.dao.CustomerDAO;
 import ca.humber.model.Customer;
@@ -54,9 +35,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
 import oracle.jdbc.OracleTypes;
-import java.awt.Desktop;
+import ca.humber.service.ReportExportService;
 
 public class ReportsTabController implements Initializable {
 
@@ -676,236 +656,28 @@ public class ReportsTabController implements Initializable {
     @FXML
     private void handleSaveReport() {
         if (reportTableView.getItems().isEmpty()) {
-            AlertDialog.showWarning("Warning", "No report data available for export");
+            AlertDialog.showWarning("警告", "沒有可匯出的報表數據");
             return;
         }
 
         try {
-            // Create a file chooser
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Save PDF Report");
-            fileChooser.getExtensionFilters().add(
-                    new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
-
-            // Set the default file name including date and time
-            LocalDateTime now = LocalDateTime.now();
-            String reportType = reportTypeComboBox.getValue() != null ? 
-                                reportTypeComboBox.getValue().replaceAll("\\s+", "_").toLowerCase() : "report";
+            String reportType = reportTypeComboBox.getValue();
             
-            // Generate the file name format including time
-            String defaultFileName = reportType + "_" + 
-                                    now.format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + 
-                                    ".pdf";
-            fileChooser.setInitialFileName(defaultFileName);
-
-            // Show save file dialog
-            File file = fileChooser.showSaveDialog(reportTableView.getScene().getWindow());
-
+            String defaultFileName = ReportExportService.getDefaultFileName(reportType);
+            
+            File file = ReportExportService.showSaveDialog(reportTableView, defaultFileName);
+            
             if (file != null) {
-                // Create PDF document
-                Document document = new Document(PageSize.A4.rotate()); // Use landscape orientation for better table display
-                PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(file));
-                document.open();
-
-                // Add title
-                String reportTitle = reportTypeComboBox.getValue() != null ? reportTypeComboBox.getValue() : "Report";
-                Paragraph title = new Paragraph(reportTitle, new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD));
-                title.setAlignment(Element.ALIGN_CENTER);
-                document.add(title);
-                document.add(new Paragraph(" ")); // Empty line
-
-                // Add report generation time
-                document.add(new Paragraph("Generated on: " + now.format(
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
-                document.add(new Paragraph(" ")); // Empty line
-
-                // Check if this is an invoice report
-                boolean isInvoiceReport = "Invoice Report".equals(reportTypeComboBox.getValue());
-
-                // Add customer information (if visible) - for invoice reports
-                if (customerSummaryBox != null && customerSummaryBox.isVisible() && isInvoiceReport) {
-                    // Create a PdfPTable for customer information with 1 column
-                    PdfPTable customerInfoTable = new PdfPTable(1);
-                    customerInfoTable.setWidthPercentage(100);
-                    customerInfoTable.getDefaultCell().setBorderWidth(0);
-                    customerInfoTable.getDefaultCell().setPadding(5);
-                    customerInfoTable.getDefaultCell().setBackgroundColor(new BaseColor(240, 240, 240));
-                    
-                    // Get customer information from the summary box
-                    for (javafx.scene.Node node : customerSummaryBox.getChildren()) {
-                        if (node instanceof Label) {
-                            Label label = (Label) node;
-                            String text = label.getText();
-                            
-                            Font font = new Font(Font.FontFamily.HELVETICA, 10);
-                            if (text.startsWith("Customer:")) {
-                                font = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
-                            }
-                            
-                            Paragraph p = new Paragraph(text, font);
-                            PdfPCell cell = new PdfPCell(p);
-                            cell.setBorder(Rectangle.NO_BORDER);
-                            cell.setPadding(2);
-                            customerInfoTable.addCell(cell);
-                        }
-                    }
-                    
-                    document.add(customerInfoTable);
-                    document.add(new Paragraph(" ")); // Empty line
-                }
-
-                // Get the visible columns in the TableView
-                int visibleColumnsCount = reportTableView.getColumns().size();
-                if (visibleColumnsCount == 0) {
-                    document.add(new Paragraph("No columns to display"));
-                } else {
-                    // Create PDF table with the exact same number of columns as displayed in UI
-                    PdfPTable pdfTable = new PdfPTable(visibleColumnsCount);
-                    pdfTable.setWidthPercentage(100);
-                    
-                    // Store column information for later use
-                    String[] columnTitles = new String[visibleColumnsCount];
-                    float[] columnWidths = new float[visibleColumnsCount];
-                    
-                    // First pass: get column titles and determine widths
-                    for (int i = 0; i < visibleColumnsCount; i++) {
-                        String columnTitle = reportTableView.getColumns().get(i).getText();
-                        columnTitles[i] = columnTitle;
-                        
-                        // Set appropriate column widths based on content type
-                        if (columnTitle.contains("Date") || columnTitle.contains("Time")) {
-                            columnWidths[i] = 2.5f;  // Date columns
-                        } else if (columnTitle.contains("Invoice Number") || columnTitle.contains("ID")) {
-                            columnWidths[i] = 1.5f;  // ID columns
-                        } else if (columnTitle.contains("Price") || columnTitle.contains("Revenue") || 
-                                 columnTitle.contains("Count")) {
-                            columnWidths[i] = 1.8f;  // Numeric columns
-                        } else if (columnTitle.contains("Description") || columnTitle.contains("Info") || 
-                                  columnTitle.contains("Vehicle")) {
-                            columnWidths[i] = 3.5f;  // Description columns - wider for long text
-                        } else if (columnTitle.contains("Status") || columnTitle.contains("Service Type")) {
-                            columnWidths[i] = 2.2f;  // Status columns
-                        } else if (columnTitle.contains("Vin") || columnTitle.contains("VIN")) {
-                            columnWidths[i] = 2.5f;  // VIN columns
-                        } else if (columnTitle.contains("Email")) {
-                            columnWidths[i] = 3.0f;  // Email columns
-                        } else if (columnTitle.contains("Phone")) {
-                            columnWidths[i] = 2.0f;  // Phone columns
-                        } else if (columnTitle.contains("Mechanic") || columnTitle.contains("Name")) {
-                            columnWidths[i] = 2.5f;  // Name columns
-                        } else {
-                            columnWidths[i] = 2.0f;  // Default
-                        }
-                    }
-                    
-                    try {
-                        pdfTable.setWidths(columnWidths);
-                    } catch (DocumentException e) {
-                        // Fallback to even distribution if setting widths fails
-                        System.err.println("Failed to set custom column widths: " + e.getMessage());
-                    }
-
-                    // Add table header with the exact same column titles as in the UI
-                    for (int i = 0; i < visibleColumnsCount; i++) {
-                        PdfPCell header = new PdfPCell(new Phrase(columnTitles[i], 
-                                new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD)));
-                        header.setHorizontalAlignment(Element.ALIGN_CENTER);
-                        header.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                        header.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                        header.setPadding(5);
-                        pdfTable.addCell(header);
-                    }
-
-                    // Add table rows - making sure each cell goes to the right column
-                    for (ObservableList<Object> row : reportTableView.getItems()) {
-                        for (int i = 0; i < visibleColumnsCount; i++) {
-                            TableColumn<ObservableList<Object>, ?> column = reportTableView.getColumns().get(i);
-                            // Get cell value using the column's cell value factory
-                            Object cellValue = column.getCellData(row);
-                            String cellText = cellValue != null ? cellValue.toString() : "";
-                            
-                            PdfPCell cell = new PdfPCell(new Phrase(cellText, new Font(Font.FontFamily.HELVETICA, 9)));
-                            
-                            // Set cell alignment based on content type
-                            String columnTitle = columnTitles[i];
-                            if (columnTitle.contains("Price") || columnTitle.contains("Revenue") || 
-                                columnTitle.contains("Count") || columnTitle.contains("Number") || 
-                                columnTitle.contains("ID") || columnTitle.contains("Id")) {
-                                cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                            } else if (columnTitle.contains("Date") || columnTitle.contains("Time")) {
-                                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                            } else {
-                                cell.setHorizontalAlignment(Element.ALIGN_LEFT);
-                            }
-                            
-                            cell.setPadding(4);
-                            pdfTable.addCell(cell);
-                        }
-                    }
-
-                    // Add table to PDF
-                    document.add(pdfTable);
-                }
-
-                if ("Revenue Report".equals(reportTypeComboBox.getValue()) && totalRevenueBox.isVisible()) {
-                    document.add(new Paragraph(" ")); // Empty line
-                    Font boldFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
-                    Paragraph summaryParagraph = new Paragraph("Total Revenue: " + totalRevenueField.getText(),
-                            boldFont);
-                    summaryParagraph.setAlignment(Element.ALIGN_RIGHT);
-                    document.add(summaryParagraph);
-                }
-
-                if (owedAmountBox.isVisible()) {
-                    Font boldFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
-                    Paragraph owedParagraph = new Paragraph("Total Due Amount : " + owedAmountField.getText(), boldFont);
-                    owedParagraph.setAlignment(Element.ALIGN_RIGHT);
-                    document.add(owedParagraph);
-                }
-
-                // Add page number footer
-                PdfPageEventHelper event = new PdfPageEventHelper() {
-                    @Override
-                    public void onEndPage(PdfWriter writer, Document document) {
-                        try {
-                            Font font = new Font(Font.FontFamily.HELVETICA, 8);
-                            Phrase footerText = new Phrase("Page " + writer.getPageNumber(), font);
-                            ColumnText.showTextAligned(writer.getDirectContent(),
-                                    Element.ALIGN_RIGHT,
-                                    footerText,
-                                    document.right(),
-                                    document.bottom() - 30, 0);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                };
-                writer.setPageEvent(event);
-
-                // Close document
-                document.close();
-
-                // Show success message
-                AlertDialog.showSuccess("Export Successful",
-                        "The report has been successfully exported as a PDF file: " + file.getName());
-
-                // Add new code: Open the generated PDF file
-                try {
-                    // Use Desktop API to open the file (works on Mac, Windows, Linux)
-                    if (Desktop.isDesktopSupported()) {
-                        Desktop desktop = Desktop.getDesktop();
-                        if (desktop.isSupported(Desktop.Action.OPEN)) {
-                            desktop.open(file);
-                        } else {
-                            System.out.println("Open operation not supported on this platform");
-                        }
-                    } else {
-                        System.out.println("Desktop is not supported on this platform");
-                    }
-                } catch (IOException e) {
-                    System.err.println("Error opening PDF file: " + e.getMessage());
-                    // Do not show error to user, as PDF was successfully generated, just cannot open automatically
-                }
+                ReportExportService.exportReportToPdf(
+                    file,
+                    reportType,
+                    reportTableView,
+                    totalRevenueField.getText(),
+                    owedAmountField.getText(),
+                    totalRevenueBox.isVisible(),
+                    owedAmountBox.isVisible(),
+                    customerSummaryBox
+                );
             }
         } catch (Exception e) {
             AlertDialog.showError("Export Error", "Failed to export PDF report: " + e.getMessage());

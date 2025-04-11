@@ -12,8 +12,10 @@ module ca.humber {
     requires java.desktop;
 
     exports ca.humber;
-    exports ca.humber.model;
     exports ca.humber.controller;
+    exports ca.humber.model;
+    exports ca.humber.util;
+    exports ca.humber.service;
 
     opens ca.humber.controller to javafx.fxml;
     opens ca.humber to javafx.fxml;
