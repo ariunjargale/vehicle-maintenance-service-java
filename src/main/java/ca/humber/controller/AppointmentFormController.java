@@ -332,36 +332,153 @@ public class AppointmentFormController implements Initializable {
             calendar.set(selectedDate.getYear(), selectedDate.getMonthValue() - 1, selectedDate.getDayOfMonth(), hour, minute, 0);
             Date appointmentDateTime = calendar.getTime();
 
-            boolean success;
-            if ("add".equals(mode)) {
-                Appointment newAppointment = new Appointment(selectedCustomer, selectedVehicle, selectedService, selectedMechanic, appointmentDateTime, statusId);
-                success = AppointmentDAO.createAppointment(newAppointment);
-                AlertDialog.showSuccess("Success", "Appointment created successfully.");
-            } else {
-                existingAppointment.setCustomer(selectedCustomer);
-                existingAppointment.setVehicle(selectedVehicle);
-                existingAppointment.setService(selectedService);
-                existingAppointment.setMechanic(selectedMechanic);
-                existingAppointment.setAppointmentDate(appointmentDateTime);
-                existingAppointment.setStatusId(statusId);
-                success = AppointmentDAO.updateAppointment(existingAppointment);
-                AlertDialog.showSuccess("Success", "Appointment updated successfully.");
+            boolean success = false;
+            boolean errorHandled = false;
+            try {
+                if ("add".equals(mode)) {
+                    Appointment newAppointment = new Appointment(selectedCustomer, selectedVehicle, selectedService, selectedMechanic, appointmentDateTime, statusId);
+                    success = AppointmentDAO.createAppointment(newAppointment);
+                    if (success) {
+                        AlertDialog.showSuccess("Success", "Appointment created successfully.");
+                    }
+                } else {
+                    existingAppointment.setCustomer(selectedCustomer);
+                    existingAppointment.setVehicle(selectedVehicle);
+                    existingAppointment.setService(selectedService);
+                    existingAppointment.setMechanic(selectedMechanic);
+                    existingAppointment.setAppointmentDate(appointmentDateTime);
+                    existingAppointment.setStatusId(statusId);
+                    success = AppointmentDAO.updateAppointment(existingAppointment);
+                    if (success) {
+                        AlertDialog.showSuccess("Success", "Appointment updated successfully.");
+                    }
+                }
+            } catch (Exception e) {
+                // Check the exception and all its cause chain
+                Throwable current = e;
+                while (current != null) {
+                    String errorMsg = current.getMessage();
+                    System.out.println("Checking exception message: " + errorMsg); // Add logging to debug
+
+                    if (errorMsg != null) {
+                        // Use more flexible pattern matching for inventory errors
+                        if (errorMsg.contains("Not enough inventory") ||
+                            (errorMsg.contains("item ID") && errorMsg.contains("Required") && errorMsg.contains("Available"))) {
+
+                            System.out.println("Matched inventory error: " + errorMsg); // Add logging to debug
+                            AlertDialog.showWarning("Inventory Issue", parseErrorMessage(errorMsg));
+                            errorHandled = true;
+                            break;
+                        } else if (errorMsg.contains("User ID not found") || errorMsg.contains("session")) {
+                            AlertDialog.showWarning("Session Issue", parseErrorMessage(errorMsg));
+                            errorHandled = true;
+                            break;
+                        } else if (errorMsg.contains("permission")) {
+                            AlertDialog.showWarning("Permission Issue", parseErrorMessage(errorMsg));
+                            errorHandled = true;
+                            break;
+                        }
+                    }
+
+                    current = current.getCause();
+                }
+
+                if (!errorHandled) {
+                    throw e; // Re-throw other types of errors
+                } else {
+                    return;
+                }
             }
 
-            if (!success) {
+            if (!success && !errorHandled) {
                 AlertDialog.showError("Error", "Failed to save appointment.");
                 return;
             }
 
-            if (parentController != null) {
-                parentController.refreshAppointments();
+            if (success) {
+                if (parentController != null) {
+                    parentController.refreshAppointments();
+                }
+                closeForm();
             }
-
-            closeForm();
         } catch (Exception e) {
             AlertDialog.showError("Error", "An error occurred while saving: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    // Add a helper method to parse the inventory error message
+    private String parseInventoryErrorMessage(String errorMessage) {
+        // Look for error messages like "Not enough inventory for item ID: X. Required: Y, Available: Z"
+        if (errorMessage.contains("Not enough inventory for item ID:")) {
+            try {
+                // Use regular expressions to extract the item ID, required quantity, and available quantity from the error message
+                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
+                    "Not enough inventory for item ID: (\\d+)\\. Required: (\\d+), Available: (\\d+)"
+                );
+                java.util.regex.Matcher matcher = pattern.matcher(errorMessage);
+
+                if (matcher.find()) {
+                    String itemId = matcher.group(1);
+                    String required = matcher.group(2);
+                    String available = matcher.group(3);
+
+                    // Create a more user-friendly error message
+                    return String.format("Unable to schedule this service due to inventory constraints.\n\n" +
+                                         "Required parts (Item ID: %s) are not available in sufficient quantity.\n" +
+                                         "Required: %s, Available: %s\n\n" +
+                                         "Please contact the inventory department to restock.",
+                                         itemId, required, available);
+                }
+            } catch (Exception ex) {
+                // If parsing fails, return the original error message
+                ex.printStackTrace();
+            }
+        }
+
+        // If the previous processing all fails, return the original error message
+        return errorMessage;
+    }
+
+    // Add a more general error message parsing method
+    private String parseErrorMessage(String errorMessage) {
+        // Handle out-of-stock errors
+        if (errorMessage.contains("Not enough inventory for item ID:")) {
+            try {
+                // Use regular expressions to extract the item ID, required quantity, and available quantity
+                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
+                    "Not enough inventory for item ID: (\\d+)\\. Required: (\\d+), Available: (\\d+)"
+                );
+                java.util.regex.Matcher matcher = pattern.matcher(errorMessage);
+
+                if (matcher.find()) {
+                    String itemId = matcher.group(1);
+                    String required = matcher.group(2);
+                    String available = matcher.group(3);
+
+                    // Create a more user-friendly error message
+                    return String.format("Unable to schedule this service due to inventory constraints.\n\n" +
+                                         "Required parts (Item ID: %s) are not available in sufficient quantity.\n" +
+                                         "Required: %s, Available: %s\n\n" +
+                                         "Please contact the inventory department to restock.",
+                                         itemId, required, available);
+                }
+            } catch (Exception ex) {
+                // If parsing fails, return the original error message
+                ex.printStackTrace();
+            }
+        }
+        // Handle user session errors
+        else if (errorMessage.contains("User ID not found in session")) {
+            return "Your session may have expired or is invalid. Please log out and log back in to continue.";
+        }
+        // Handle permission errors
+        else if (errorMessage.contains("permission") || errorMessage.contains("Permission")) {
+            return "You do not have sufficient permissions to perform this action. Please contact your system administrator.";
+        }
+
+        // If the previous processing all fails, return the original error message
+        return errorMessage;
     }
 
     private boolean validateInput() {

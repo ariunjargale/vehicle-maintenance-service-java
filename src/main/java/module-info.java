@@ -7,8 +7,9 @@ module ca.humber {
     requires java.naming;
     requires ojdbc8;
     requires java.management;
-    requires itextpdf; 
-    requires itext; 
+    requires itextpdf;
+    requires itext;
+    requires java.desktop;
 
     exports ca.humber;
     exports ca.humber.model;
