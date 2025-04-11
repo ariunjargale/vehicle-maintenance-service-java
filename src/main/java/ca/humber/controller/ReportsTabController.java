@@ -716,16 +716,6 @@ public class ReportsTabController implements Initializable {
                     document.add(new Paragraph(" ")); // Empty line
                 }
 
-                // Add total revenue information (if it is a revenue report)
-                if ("Revenue Report".equals(reportTypeComboBox.getValue()) && totalRevenueBox.isVisible()) {
-                    Font boldFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
-                    Paragraph revenueParagraph = new Paragraph("Total Revenue: " + totalRevenueField.getText(),
-                            boldFont);
-                    revenueParagraph.setAlignment(Element.ALIGN_RIGHT);
-                    document.add(revenueParagraph);
-                    document.add(new Paragraph(" ")); // Empty line
-                }
-
                 // Get the visible columns in the TableView
                 int visibleColumnsCount = reportTableView.getColumns().size();
                 if (visibleColumnsCount == 0) {
@@ -819,11 +809,11 @@ public class ReportsTabController implements Initializable {
                     document.add(pdfTable);
                 }
 
-                // Add summary footer for revenue reports
+                // 修改底部總額顯示，移除 Summary 字樣
                 if ("Revenue Report".equals(reportTypeComboBox.getValue()) && totalRevenueBox.isVisible()) {
                     document.add(new Paragraph(" ")); // Empty line
                     Font boldFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
-                    Paragraph summaryParagraph = new Paragraph("Total Revenue Summary: " + totalRevenueField.getText(),
+                    Paragraph summaryParagraph = new Paragraph("Total Revenue: " + totalRevenueField.getText(),
                             boldFont);
                     summaryParagraph.setAlignment(Element.ALIGN_RIGHT);
                     document.add(summaryParagraph);

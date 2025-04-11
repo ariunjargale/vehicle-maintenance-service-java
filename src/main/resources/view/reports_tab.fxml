@@ -38,7 +38,7 @@
                 </ComboBox>
                 
                 <Label text="Report Format:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                <ComboBox fx:id="reportFormatComboBox" promptText="Select format" GridPane.columnIndex="3" GridPane.rowIndex="0" prefWidth="200.0" GridPane.fillWidth="true">
+                <ComboBox fx:id="reportFormatComboBox" promptText="Select format" GridPane.columnIndex="3" GridPane.rowIndex="0" prefWidth="200.0" GridPane.fillWidth="true" value="Table View">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
                             <String fx:value="Table View" />

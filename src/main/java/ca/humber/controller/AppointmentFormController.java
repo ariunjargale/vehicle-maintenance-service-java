@@ -18,6 +18,7 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
@@ -49,7 +50,7 @@ public class AppointmentFormController implements Initializable {
         appointmentTimeComboBox.setItems(FXCollections.observableArrayList(times));
         appointmentTimeComboBox.setValue("09:00");
 
-        String[] statuses = { "Scheduled", "In Progress", "Completed", "Cancelled" };
+        String[] statuses = { "Scheduled", "In Progress", "Completed", "Cancelled", "Paid" };
         statusComboBox.setItems(FXCollections.observableArrayList(statuses));
         statusComboBox.setValue("Scheduled");
 
@@ -213,6 +214,15 @@ public class AppointmentFormController implements Initializable {
                 }
             }
 
+            if ("edit".equals(mode) && existingAppointment != null && existingAppointment.getAppointmentDate() != null) {
+                SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+                String currentTime = timeFormat.format(existingAppointment.getAppointmentDate());
+                
+                if (!availableTimes.contains(currentTime)) {
+                    availableTimes.add(currentTime);
+                }
+            }
+
             appointmentTimeComboBox.setItems(FXCollections.observableArrayList(availableTimes));
             if (!availableTimes.isEmpty()) {
                 appointmentTimeComboBox.setValue(availableTimes.get(0));
@@ -297,6 +307,9 @@ public class AppointmentFormController implements Initializable {
             case "X":
                 statusComboBox.setValue("Cancelled");
                 break;
+            case "P":
+                statusComboBox.setValue("Paid");
+                break;
             default:
                 statusComboBox.setValue("Scheduled");
         }
@@ -321,6 +334,7 @@ public class AppointmentFormController implements Initializable {
                 case "In Progress" -> "I";
                 case "Completed" -> "C";
                 case "Cancelled" -> "X";
+                case "Paid" -> "P";
                 default -> "S";
             };
 
@@ -331,6 +345,14 @@ public class AppointmentFormController implements Initializable {
             java.util.Calendar calendar = java.util.Calendar.getInstance();
             calendar.set(selectedDate.getYear(), selectedDate.getMonthValue() - 1, selectedDate.getDayOfMonth(), hour, minute, 0);
             Date appointmentDateTime = calendar.getTime();
+
+            Integer currentAppointmentId = "edit".equals(mode) && existingAppointment != null ? 
+                                          existingAppointment.getAppointmentId() : null;
+            if (AppointmentDAO.isTimeColliding(appointmentDateTime, currentAppointmentId)) {
+                AlertDialog.showWarning("Appointment Conflict", 
+                       "This time slot already has the maximum number of appointments (3). Please select a different time.");
+                return;
+            }
 
             boolean success = false;
             boolean errorHandled = false;

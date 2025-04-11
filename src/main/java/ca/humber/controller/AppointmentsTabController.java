@@ -165,6 +165,9 @@ public class AppointmentsTabController implements Initializable {
                         case "X":
                             setText("Cancelled");
                             break;
+                        case "P":
+                            setText("Paid");
+                            break;
                         default:
                             setText(statusId);
                     }

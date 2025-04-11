@@ -42,6 +42,12 @@
             <version>19.8.0.0</version>
         </dependency>
 
+    
+      <dependency>
+        <groupId>io.github.cquiroz</groupId>
+        <artifactId>scala-java-locales_native0.5_2.13</artifactId>
+        <version>1.5.4</version>
+      </dependency>
     </dependencies>
     <build>
         <plugins>
