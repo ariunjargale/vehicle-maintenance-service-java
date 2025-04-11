@@ -78,7 +78,6 @@ public class ReportsTabController implements Initializable {
     @FXML
     private ComboBox<String> monthComboBox;
 
-    // Modify here to use ServiceTypeWrapper
     @FXML
     private ComboBox<ServiceTypeWrapper> serviceTypeComboBox;
 
@@ -117,8 +116,13 @@ public class ReportsTabController implements Initializable {
 
     private Map<String, Integer> monthNameToNumber = new HashMap<>();
 
-    // Add to the class member variable area
     private VBox customerSummaryBox;
+
+    @FXML
+    private VBox owedAmountBox;
+
+    @FXML
+    private TextField owedAmountField;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -173,6 +177,9 @@ public class ReportsTabController implements Initializable {
 
         totalRevenueBox.setVisible(false);
         totalRevenueBox.setManaged(false);
+
+        owedAmountBox.setVisible(false);
+        owedAmountBox.setManaged(false);
     }
 
     // Add a method to clear form data but keep report type selection
@@ -194,6 +201,9 @@ public class ReportsTabController implements Initializable {
         // Hide total revenue box
         totalRevenueBox.setVisible(false);
         totalRevenueBox.setManaged(false);
+
+        owedAmountBox.setVisible(false);
+        owedAmountBox.setManaged(false);
 
         // Disable save report button
         saveReportButton.setDisable(true);
@@ -279,24 +289,22 @@ public class ReportsTabController implements Initializable {
 
     @FXML
     private void handleGenerateReport() {
-        // Ensure that the value of reportTypeComboBox is updated
         String reportType = reportTypeComboBox.getValue();
         if (reportType == null) {
             AlertDialog.showWarning("Warning", "Please select a report type");
             return;
         }
 
-        // Ensure that the correct option pane is displayed according to the report type
         if ("Revenue Report".equals(reportType)) {
-            revenueOptionsPane.setVisible(true);
-            revenueOptionsPane.setManaged(true);
-            invoiceOptionsPane.setVisible(false);
-            invoiceOptionsPane.setManaged(false);
+            totalRevenueBox.setVisible(true);
+            totalRevenueBox.setManaged(true);
+            owedAmountBox.setVisible(false);
+            owedAmountBox.setManaged(false);
         } else if ("Invoice Report".equals(reportType)) {
-            invoiceOptionsPane.setVisible(true);
-            invoiceOptionsPane.setManaged(true);
-            revenueOptionsPane.setVisible(false);
-            revenueOptionsPane.setManaged(false);
+            totalRevenueBox.setVisible(false);
+            totalRevenueBox.setManaged(false);
+            owedAmountBox.setVisible(true);
+            owedAmountBox.setManaged(true);
         }
 
         clearTableView();
@@ -427,6 +435,7 @@ public class ReportsTabController implements Initializable {
         // First, save all data from the result set to a local collection
         ObservableList<ObservableList<Object>> allRows = FXCollections.observableArrayList();
         double totalRev = 0.0;
+        double owedAmount = 0.0; 
 
         // Read all rows and calculate total revenue
         ResultSetMetaData metaData = rs.getMetaData();
@@ -434,10 +443,13 @@ public class ReportsTabController implements Initializable {
 
         // Find the index of the total revenue column
         int revenueColumnIndex = -1;
+        int statusColumnIndex = -1;
         for (int i = 1; i <= columnCount; i++) {
-            if ("TOTAL_REVENUE".equalsIgnoreCase(metaData.getColumnName(i))) {
+            String columnName = metaData.getColumnName(i);
+            if ("TOTAL_REVENUE".equalsIgnoreCase(columnName)) {
                 revenueColumnIndex = i;
-                break;
+            } else if ("STATUS_ID".equalsIgnoreCase(columnName)) {
+                statusColumnIndex = i;
             }
         }
 
@@ -466,6 +478,17 @@ public class ReportsTabController implements Initializable {
                 try {
                     double revenue = rs.getDouble(revenueColumnIndex);
                     totalRev += revenue;
+
+
+                    if (statusColumnIndex > 0) {
+                        String status = rs.getString(statusColumnIndex);
+                        if ("C".equals(status) && !"P".equals(status)) {
+                            owedAmount += revenue; 
+                        }
+                    } else {
+   
+                        owedAmount += revenue;
+                    }
                 } catch (SQLException ex) {
                     // Handle the case where the field is not found or the value conversion fails
                 }
@@ -474,8 +497,10 @@ public class ReportsTabController implements Initializable {
 
         // Set total revenue
         totalRevenueField.setText(String.format("$%.2f", totalRev));
-
-        // Populate the table
+        
+        // Set owed amount (only displayed in invoice reports)
+        owedAmountField.setText(String.format("$%.2f", owedAmount));
+        
         populateTableWithData(rs.getMetaData(), allRows);
     }
 
@@ -491,7 +516,7 @@ public class ReportsTabController implements Initializable {
             final int columnIndex = i - 1;
             String columnName = metaData.getColumnName(i);
 
-            TableColumn<ObservableList<Object>, Object> column = new TableColumn<>(columnName);
+            TableColumn<ObservableList<Object>, Object> column = new TableColumn<>(formatColumnName(columnName));
             column.setCellValueFactory(cellData -> {
                 ObservableList<Object> row = cellData.getValue();
                 if (columnIndex >= row.size()) {
@@ -516,6 +541,19 @@ public class ReportsTabController implements Initializable {
         }
 
         reportTableView.setItems(data);
+        
+        boolean isInvoiceReport = "Invoice Report".equals(reportTypeComboBox.getValue());
+        if (isInvoiceReport) {
+            owedAmountBox.setVisible(true);
+            owedAmountBox.setManaged(true);
+            totalRevenueBox.setVisible(false);
+            totalRevenueBox.setManaged(false);
+        } else {
+            totalRevenueBox.setVisible(true);
+            totalRevenueBox.setManaged(true);
+            owedAmountBox.setVisible(false);
+            owedAmountBox.setManaged(false);
+        }
     }
 
     // Update getMonthNumber method to handle "All Year" option
@@ -809,7 +847,6 @@ public class ReportsTabController implements Initializable {
                     document.add(pdfTable);
                 }
 
-                // 修改底部總額顯示，移除 Summary 字樣
                 if ("Revenue Report".equals(reportTypeComboBox.getValue()) && totalRevenueBox.isVisible()) {
                     document.add(new Paragraph(" ")); // Empty line
                     Font boldFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
@@ -817,6 +854,13 @@ public class ReportsTabController implements Initializable {
                             boldFont);
                     summaryParagraph.setAlignment(Element.ALIGN_RIGHT);
                     document.add(summaryParagraph);
+                }
+
+                if (owedAmountBox.isVisible()) {
+                    Font boldFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
+                    Paragraph owedParagraph = new Paragraph("Total Due Amount : " + owedAmountField.getText(), boldFont);
+                    owedParagraph.setAlignment(Element.ALIGN_RIGHT);
+                    document.add(owedParagraph);
                 }
 
                 // Add page number footer
@@ -904,6 +948,7 @@ public class ReportsTabController implements Initializable {
             customerSummaryBox.setVisible(false);
             customerSummaryBox.setManaged(false);
         }
+        
     }
 
     // Modify populateTableFromResultSet method to enhance error handling and data
@@ -920,6 +965,19 @@ public class ReportsTabController implements Initializable {
         String customerPhone = "";
         String customerEmail = "";
         boolean isInvoiceReport = "Invoice Report".equals(reportTypeComboBox.getValue());
+
+
+        if (isInvoiceReport) {
+            owedAmountBox.setVisible(true);
+            owedAmountBox.setManaged(true);
+            totalRevenueBox.setVisible(false);
+            totalRevenueBox.setManaged(false);
+        } else {
+            totalRevenueBox.setVisible(true);
+            totalRevenueBox.setManaged(true);
+            owedAmountBox.setVisible(false);
+            owedAmountBox.setManaged(false);
+        }
 
         // Column names to hide (for invoice reports)
         Set<String> hiddenColumns = isInvoiceReport ? new HashSet<>(Arrays.asList(
@@ -965,6 +1023,20 @@ public class ReportsTabController implements Initializable {
 
         // Add data rows
         ObservableList<ObservableList<Object>> data = FXCollections.observableArrayList();
+        double owedAmount = 0.0;
+        boolean hasStatusColumn = false;
+        int priceColumnIndex = -1;
+        int statusColumnIndex = -1;
+        
+        for (int i = 1; i <= metaData.getColumnCount(); i++) {
+            String columnName = metaData.getColumnName(i);
+            if ("SERVICE_PRICE".equalsIgnoreCase(columnName)) {
+                priceColumnIndex = i;
+            } else if ("STATUS_ID".equalsIgnoreCase(columnName)) {
+                statusColumnIndex = i;
+                hasStatusColumn = true;
+            }
+        }
         while (rs.next()) {
             ObservableList<Object> row = FXCollections.observableArrayList();
             for (int i = 1; i <= columnCount; i++) {
@@ -972,7 +1044,19 @@ public class ReportsTabController implements Initializable {
                     Object value = rs.getObject(i);
                     row.add(value);
 
-                    // If it is an invoice report, save customer information
+                    // 如果是發票報表，計算欠款總額
+                    if (isInvoiceReport && hasStatusColumn && i == priceColumnIndex) {
+                        try {
+                            double price = rs.getDouble(priceColumnIndex);
+                            String status = rs.getString(statusColumnIndex);
+                            // 只累計已完成但未付款的服務金額
+                            if ("C".equals(status) && !"P".equals(status)) {
+                                owedAmount += price;
+                            }
+                        } catch (Exception e) {
+                        }
+                    }
+                    
                     if (isInvoiceReport) {
                         String columnName = metaData.getColumnName(i);
                         if (columnName.equalsIgnoreCase("CUSTOMER_NAME") && value != null) {
@@ -998,43 +1082,56 @@ public class ReportsTabController implements Initializable {
         }
 
         reportTableView.setItems(data);
-
-        // For invoice reports, display customer information summary
-        if (isInvoiceReport && !data.isEmpty()) {
-            // Create an information panel to display customer information
-            if (customerSummaryBox == null) {
-                customerSummaryBox = new VBox();
-                customerSummaryBox.setSpacing(5);
-                customerSummaryBox.setPadding(new Insets(10, 0, 10, 0));
-                customerSummaryBox.setStyle(
-                        "-fx-border-color: #cccccc; -fx-border-width: 1px; -fx-background-color: #f8f8f8; -fx-padding: 10px;");
-
-                // Add to the interface - located above the table
-                BorderPane parent = (BorderPane) reportTableView.getParent();
-                parent.setTop(customerSummaryBox);
-            } else {
-                customerSummaryBox.getChildren().clear();
-                customerSummaryBox.setVisible(true);
-                customerSummaryBox.setManaged(true);
+        
+        if (isInvoiceReport) {
+            owedAmountField.setText(String.format("$%.2f", owedAmount));
+            owedAmountBox.setVisible(true);
+            owedAmountBox.setManaged(true);
+            
+            totalRevenueBox.setVisible(false);
+            totalRevenueBox.setManaged(false);
+            
+            // For invoice reports, display customer information summary
+            if (isInvoiceReport && !data.isEmpty()) {
+                // Create an information panel to display customer information
+                if (customerSummaryBox == null) {
+                    customerSummaryBox = new VBox();
+                    customerSummaryBox.setSpacing(5);
+                    customerSummaryBox.setPadding(new Insets(10, 0, 10, 0));
+                    customerSummaryBox.setStyle(
+                            "-fx-border-color: #cccccc; -fx-border-width: 1px; -fx-background-color: #f8f8f8; -fx-padding: 10px;");
+    
+                    // Add to the interface - located above the table
+                    BorderPane parent = (BorderPane) reportTableView.getParent();
+                    parent.setTop(customerSummaryBox);
+                } else {
+                    customerSummaryBox.getChildren().clear();
+                    customerSummaryBox.setVisible(true);
+                    customerSummaryBox.setManaged(true);
+                }
+    
+                // Add customer information
+                Label nameLabel = new Label("Customer: " + customerName);
+                nameLabel.setStyle("-fx-font-weight: bold;");
+                customerSummaryBox.getChildren().add(nameLabel);
+    
+                if (!customerPhone.isEmpty()) {
+                    Label phoneLabel = new Label("Phone: " + formatPhoneNumber(customerPhone));
+                    customerSummaryBox.getChildren().add(phoneLabel);
+                }
+    
+                if (!customerEmail.isEmpty()) {
+                    Label emailLabel = new Label("Email: " + customerEmail);
+                    customerSummaryBox.getChildren().add(emailLabel);
+                }
+            } else if (customerSummaryBox != null) {
+                customerSummaryBox.setVisible(false);
+                customerSummaryBox.setManaged(false);
             }
-
-            // Add customer information
-            Label nameLabel = new Label("Customer: " + customerName);
-            nameLabel.setStyle("-fx-font-weight: bold;");
-            customerSummaryBox.getChildren().add(nameLabel);
-
-            if (!customerPhone.isEmpty()) {
-                Label phoneLabel = new Label("Phone: " + formatPhoneNumber(customerPhone));
-                customerSummaryBox.getChildren().add(phoneLabel);
-            }
-
-            if (!customerEmail.isEmpty()) {
-                Label emailLabel = new Label("Email: " + customerEmail);
-                customerSummaryBox.getChildren().add(emailLabel);
-            }
-        } else if (customerSummaryBox != null) {
-            customerSummaryBox.setVisible(false);
-            customerSummaryBox.setManaged(false);
+        } else {
+            // 收入報表不顯示欠款框
+            owedAmountBox.setVisible(false);
+            owedAmountBox.setManaged(false);
         }
     }
 

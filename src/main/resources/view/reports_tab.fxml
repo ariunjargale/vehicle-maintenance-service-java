@@ -150,11 +150,19 @@
                 </TableView>
             </center>
             <bottom>
-                <VBox fx:id="totalRevenueBox" spacing="5">
-                    <HBox spacing="10" alignment="CENTER_LEFT">
-                        <Label text="Total Revenue:" styleClass="label-bold"/>
-                        <TextField fx:id="totalRevenueField" editable="false" prefWidth="150"/>
-                    </HBox>
+                <VBox>
+                    <VBox fx:id="totalRevenueBox" spacing="5" visible="false" managed="false">
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Label text="Total Revenue:" styleClass="label-bold"/>
+                            <TextField fx:id="totalRevenueField" editable="false" prefWidth="150"/>
+                        </HBox>
+                    </VBox>
+                    <VBox fx:id="owedAmountBox" spacing="5" visible="false" managed="false">
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Label text="Total Owed Amount:" styleClass="label-bold"/>
+                            <TextField fx:id="owedAmountField" editable="false" prefWidth="150"/>
+                        </HBox>
+                    </VBox>
                 </VBox>
             </bottom>
         </BorderPane>
