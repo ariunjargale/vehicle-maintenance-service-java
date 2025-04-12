@@ -39,17 +39,9 @@ public class AppointmentDAO {
     // Retrieve all appointments
     public static List<Appointment> getAllAppointments() {
         List<Appointment> appointments = new ArrayList<>();
-<<<<<<< HEAD
         
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             appointments = session.createQuery("FROM Appointment WHERE isActive = true ORDER BY appointmentDate", Appointment.class).list();
-=======
-        try (Session session = SessionManager.getSession()) {
-            // Use HQL to query all active appointments
-            appointments = session
-                    .createQuery("FROM Appointment WHERE isActive = true ORDER BY appointmentDate", Appointment.class)
-                    .list();
->>>>>>> 026f56b7e4258bdf839072f29334fe4a99423267
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -70,7 +62,6 @@ public class AppointmentDAO {
     // Create a new appointment using the stored procedure
     public static boolean createAppointment(Appointment appointment) {
         try {
-<<<<<<< HEAD
             return HibernateUtil.callFunction(conn -> {
                 try (CallableStatement stmt = conn.prepareCall(
                         "{call appointment_pkg.sp_create_appointment(?, ?, ?, ?, ?, ?)}")) {
@@ -93,20 +84,9 @@ public class AppointmentDAO {
                 } catch (SQLException e) {
                     handlePackageError(e, "sp_create_appointment");
                     return false;
-=======
-            session = SessionManager.getSession();
-            transaction = session.beginTransaction();
-
-            // Validate foreign key relationships
-            if (appointment.getCustomer() != null) {
-                Customer customer = session.get(Customer.class, appointment.getCustomer().getCustomerId());
-                if (customer == null) {
-                    throw new IllegalArgumentException("The selected customer does not exist");
->>>>>>> 026f56b7e4258bdf839072f29334fe4a99423267
                 }
             });
         } catch (Exception e) {
-<<<<<<< HEAD
             // Handle SQL errors
             Throwable cause = e;
             while (cause != null) {
@@ -121,36 +101,11 @@ public class AppointmentDAO {
 
             e.printStackTrace();
             return false;
-=======
-            if (transaction != null && transaction.isActive() && session != null && session.isOpen()) {
-                try {
-                    transaction.rollback();
-                } catch (Exception rollbackEx) {
-                    System.err.println("Unable to rollback transaction: " + rollbackEx.getMessage());
-                    rollbackEx.printStackTrace();
-                }
-            }
-
-//            // Handle SQL errors
-//            Throwable cause = e;
-//            while (cause != null) {
-//                if (cause.getMessage() != null && cause.getMessage().contains("ORA-02291")) {
-//                    throw  new RuntimeException("Foreign key constraint error: Referenced record does not exist");
-//                }
-//                else if (cause.getMessage() != null && cause.getMessage().contains("ORA-20001")) {
-//                    throw  new RuntimeException("Low Stock Alert: Not enough inventory for the service");
-//                }
-//                cause = cause.getCause();
-//            }
-            String error = HibernateUtil.message(e);
-            throw new RuntimeException(error);
->>>>>>> 026f56b7e4258bdf839072f29334fe4a99423267
         }
     }
 
     // Update appointment status using the stored procedure
     public static boolean updateAppointmentStatus(int appointmentId, String statusId) {
-<<<<<<< HEAD
         try {
             return HibernateUtil.callFunction(conn -> {
                 try (CallableStatement stmt = conn.prepareCall(
@@ -166,21 +121,6 @@ public class AppointmentDAO {
                     return false;
                 }
             });
-=======
-        Transaction transaction = null;
-        try (Session session = SessionManager.getSession()) {
-            transaction = session.beginTransaction();
-
-            Appointment appointment = session.get(Appointment.class, appointmentId);
-            if (appointment != null) {
-                appointment.setStatusId(statusId);
-                session.update(appointment);
-                transaction.commit();
-                return true;
-            } else {
-                return false;
-            }
->>>>>>> 026f56b7e4258bdf839072f29334fe4a99423267
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -189,7 +129,6 @@ public class AppointmentDAO {
 
     // Assign a mechanic to an appointment using the stored procedure
     public static boolean assignMechanic(int appointmentId, int mechanicId) {
-<<<<<<< HEAD
         try {
             return HibernateUtil.callFunction(conn -> {
                 try (CallableStatement stmt = conn.prepareCall(
@@ -205,23 +144,6 @@ public class AppointmentDAO {
                     return false;
                 }
             });
-=======
-        Transaction transaction = null;
-        try (Session session = SessionManager.getSession()) {
-            transaction = session.beginTransaction();
-
-            Appointment appointment = session.get(Appointment.class, appointmentId);
-            Mechanic mechanic = session.get(Mechanic.class, mechanicId);
-
-            if (appointment != null && mechanic != null) {
-                appointment.setMechanic(mechanic);
-                session.update(appointment);
-                transaction.commit();
-                return true;
-            } else {
-                return false;
-            }
->>>>>>> 026f56b7e4258bdf839072f29334fe4a99423267
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -230,7 +152,6 @@ public class AppointmentDAO {
 
     // Delete an appointment (soft delete) using the stored procedure
     public static boolean deleteAppointment(int appointmentId) throws ConstraintException {
-<<<<<<< HEAD
         try {
             return HibernateUtil.callFunction(conn -> {
                 try (CallableStatement stmt = conn.prepareCall(
@@ -245,22 +166,6 @@ public class AppointmentDAO {
                     return false;
                 }
             });
-=======
-        Transaction transaction = null;
-        try (Session session = SessionManager.getSession()) {
-            transaction = session.beginTransaction();
-
-            Appointment appointment = session.get(Appointment.class, appointmentId);
-            if (appointment != null) {
-                // Soft delete - only set as inactive
-                appointment.setIsActive(false);
-                session.update(appointment);
-                transaction.commit();
-                return true;
-            } else {
-                return false;
-            }
->>>>>>> 026f56b7e4258bdf839072f29334fe4a99423267
         } catch (Exception e) {
             e.printStackTrace();
             throw new ConstraintException("Unable to delete appointment, there may be associated records.");
@@ -271,7 +176,6 @@ public class AppointmentDAO {
     public static Map<String, String> getAvailableSlots(Date date) {
         Map<String, String> availableSlots = new HashMap<>();
 
-<<<<<<< HEAD
         try {
             List<Map.Entry<String, String>> results = HibernateUtil.callResultListFunction(conn -> {
                 List<Map.Entry<String, String>> slots = new ArrayList<>();
@@ -290,51 +194,6 @@ public class AppointmentDAO {
                             String status = rs.getString("STATUS");
                             slots.add(Map.entry(timeSlot, status));
                         }
-=======
-        try (Session session = SessionManager.getSession()) {
-            // Set the start and end time of the date
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(date);
-            cal.set(Calendar.HOUR_OF_DAY, 0);
-            cal.set(Calendar.MINUTE, 0);
-            cal.set(Calendar.SECOND, 0);
-            Date startDate = cal.getTime();
-
-            cal.set(Calendar.HOUR_OF_DAY, 23);
-            cal.set(Calendar.MINUTE, 59);
-            cal.set(Calendar.SECOND, 59);
-            Date endDate = cal.getTime();
-
-            // Query the booked slots and their count for the date
-            String hql = "SELECT EXTRACT(HOUR FROM a.appointmentDate), COUNT(a) " +
-                    "FROM Appointment a " +
-                    "WHERE a.appointmentDate BETWEEN :startDate AND :endDate " +
-                    "AND a.isActive = true " +
-                    "GROUP BY EXTRACT(HOUR FROM a.appointmentDate)";
-
-            Query<Object[]> query = session.createQuery(hql, Object[].class);
-            query.setParameter("startDate", startDate);
-            query.setParameter("endDate", endDate);
-
-            List<Object[]> results = query.getResultList();
-
-            // Create all available slots (9:00-17:00)
-            for (int hour = 9; hour <= 17; hour++) {
-                String timeSlot = String.format("%02d:00", hour);
-                availableSlots.put(timeSlot, "AVAILABLE");
-            }
-
-            // Update booked slots based on query results
-            for (Object[] result : results) {
-                Integer hour = (Integer) result[0];
-                Long count = (Long) result[1];
-
-                if (hour >= 9 && hour <= 17) {
-                    String timeSlot = String.format("%02d:00", hour);
-                    // Assume a maximum of 3 appointments per slot
-                    if (count >= 3) {
-                        availableSlots.put(timeSlot, "BOOKED");
->>>>>>> 026f56b7e4258bdf839072f29334fe4a99423267
                     }
                 } catch (SQLException e) {
                     handlePackageError(e, "sp_get_available_slots");
@@ -449,14 +308,8 @@ public class AppointmentDAO {
             return false;
         }
 
-<<<<<<< HEAD
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Transaction transaction = session.beginTransaction();
-=======
-        Transaction transaction = null;
-        try (Session session = SessionManager.getSession()) {
-            transaction = session.beginTransaction();
->>>>>>> 026f56b7e4258bdf839072f29334fe4a99423267
 
             try {
                 // First get the existing appointment
