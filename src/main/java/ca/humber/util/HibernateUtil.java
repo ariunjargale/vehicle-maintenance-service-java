@@ -32,6 +32,16 @@ public class HibernateUtil {
 	}
 
 	public static void callProcedure(Consumer<Connection> caller) {
+		Connection conn = SessionManager.getDbConnection();
+		if (conn != null) {
+			try {
+				caller.accept(conn);
+				return;
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
 		Session session = SessionManager.getSession();
 		synchronized (sessionLock) {
 			Transaction tx = session.getTransaction();
@@ -50,6 +60,15 @@ public class HibernateUtil {
 	}
 
 	public static <T> T callFunction(Function<Connection, T> caller) {
+		Connection conn = SessionManager.getDbConnection();
+		if (conn != null) {
+			try {
+				return caller.apply(conn);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
 		Session session = SessionManager.getSession();
 		synchronized (sessionLock) {
 			Transaction tx = session.getTransaction();
@@ -69,6 +88,16 @@ public class HibernateUtil {
 	}
 
 	public static <T> List<T> callResultListFunction(Function<Connection, List<T>> caller) {
+		Connection conn = SessionManager.getDbConnection();
+		if (conn != null) {
+			try {
+				return caller.apply(conn);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
+		
 		Session session = SessionManager.getSession();
 		synchronized (sessionLock) {
 			Transaction tx = session.getTransaction();
@@ -87,7 +116,6 @@ public class HibernateUtil {
 		}
 	}
 
-	// It'll be removed
 	public static void executeInsideTransaction(Consumer<Session> action) {
 		Session session = SessionManager.getSession();
 		synchronized (sessionLock) {
@@ -106,7 +134,6 @@ public class HibernateUtil {
 		}
 	}
 
-	// It'll be removed
 	public static <T> T executeWithResult(Function<Session, T> function) {
 		Session session = SessionManager.getSession();
 		synchronized (sessionLock) {
@@ -124,5 +151,30 @@ public class HibernateUtil {
 				throw new RuntimeException(e);
 			}
 		}
+	}
+	
+	public static String message(Exception e) {
+		String defaultMessage = "An unexpected error occurred.";
+		Throwable cause = e;
+
+		while (cause != null) {
+			String msg = cause.getMessage();
+			if (msg != null) {
+				if (msg.contains("ORA-00001")) {
+					return "Duplicate entry: A unique constraint has been violated.";
+				} else if (msg.contains("ORA-02291")) {
+					return "Foreign key constraint error: Related record not found.";
+				} else if (msg.contains("ORA-02292")) {
+					return "Cannot delete or update: Child records exist.";
+				} else if (msg.contains("ORA-20001")) {
+					// Custom application error
+					return msg.split("\n")[0].replace("ORA-20001:", "").trim();
+				}
+			}
+			cause = cause.getCause();
+		}
+
+		// Fallback to root message or default
+		return (e.getMessage() != null) ? e.getMessage().split("\n")[0] : defaultMessage;
 	}
 }

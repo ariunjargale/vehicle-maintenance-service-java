@@ -10,12 +10,14 @@ import ca.humber.model.RolePermission;
 import ca.humber.model.User;
 import ca.humber.model.UserRole;
 import ca.humber.util.HibernateUtil;
+import ca.humber.util.SessionManager;
 import oracle.jdbc.OracleTypes;
 
 public class UsersDao {
 
 	public static User login(String username, String hashedPassword) {
 		return HibernateUtil.callFunction(conn -> {
+			SessionManager.setDbConnection(conn);
 			try (CallableStatement stmt = conn.prepareCall("{ ? = call user_pkg.login(?, ?) }")) {
 				stmt.registerOutParameter(1, OracleTypes.CURSOR);
 				stmt.setString(2, username);
@@ -61,6 +63,7 @@ public class UsersDao {
 
 			} catch (SQLException e) {
 				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(), e);
 			}
 
 			return permissions;
@@ -85,6 +88,7 @@ public class UsersDao {
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(), e);
 			}
 
 			return roles;
@@ -111,6 +115,7 @@ public class UsersDao {
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(), e);
 			}
 
 			return users;
@@ -138,6 +143,7 @@ public class UsersDao {
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(), e);
 			}
 
 			return users;
@@ -153,6 +159,7 @@ public class UsersDao {
 				stmt.execute();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(), e);
 			}
 		});
 	}
@@ -166,6 +173,7 @@ public class UsersDao {
 				stmt.execute();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(), e);
 			}
 		});
 	}
@@ -177,8 +185,8 @@ public class UsersDao {
 				stmt.setString(2, newPassword);
 				stmt.execute();
 			} catch (SQLException e) {
-				e.printStackTrace(); // optionally log
-				throw new RuntimeException("Failed to reset password", e);
+				e.printStackTrace(); 
+				throw new RuntimeException(e.getMessage(), e);
 			}
 		});
 	}
@@ -190,6 +198,7 @@ public class UsersDao {
 				stmt.execute();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(), e);
 			}
 		});
 	}

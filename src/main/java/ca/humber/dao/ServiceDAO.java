@@ -3,6 +3,8 @@ package ca.humber.dao;
 import ca.humber.exceptions.ConstraintException;
 import ca.humber.model.Service;
 import ca.humber.util.HibernateUtil;
+import ca.humber.util.SessionManager;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.exception.ConstraintViolationException;
@@ -18,7 +20,7 @@ public class ServiceDAO {
      */
     public static List<Service> getActiveServices() {
         List<Service> services = new ArrayList<>();
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             services = session.createQuery("FROM Service WHERE isActive = true ORDER BY serviceName", Service.class).list();
         } catch (Exception e) {
             e.printStackTrace();
@@ -31,7 +33,7 @@ public class ServiceDAO {
      */
     public static List<Service> getAllServices() {
         List<Service> services = new ArrayList<>();
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             services = session.createQuery("FROM Service ORDER BY serviceName", Service.class).list();
         } catch (Exception e) {
             e.printStackTrace();
@@ -43,7 +45,7 @@ public class ServiceDAO {
      * Get service by ID
      */
     public static Service getServiceById(int id) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             return session.get(Service.class, id);
         } catch (Exception e) {
             e.printStackTrace();
@@ -56,7 +58,7 @@ public class ServiceDAO {
      */
     public static List<Service> searchServices(String searchTerm) {
         List<Service> results = new ArrayList<>();
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             String searchPattern = "%" + searchTerm.toLowerCase() + "%";
             Query<Service> query = session.createQuery(
                     "FROM Service s WHERE s.isActive = true AND (LOWER(s.serviceName) LIKE :searchPattern " +
@@ -76,7 +78,7 @@ public class ServiceDAO {
      */
     public static boolean createService(Service service) {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             transaction = session.beginTransaction();
 
             // Set as active by default
@@ -99,7 +101,7 @@ public class ServiceDAO {
      */
     public static boolean updateService(Service service) {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             transaction = session.beginTransaction();
 
             Service existingService = session.get(Service.class, service.getServiceId());
@@ -127,7 +129,7 @@ public class ServiceDAO {
      */
     public static boolean deleteService(int serviceId) throws ConstraintException {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             transaction = session.beginTransaction();
 
             Service service = session.get(Service.class, serviceId);
@@ -170,7 +172,7 @@ public class ServiceDAO {
      */
     public static boolean reactivateService(int serviceId) {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             transaction = session.beginTransaction();
 
             Service service = session.get(Service.class, serviceId);

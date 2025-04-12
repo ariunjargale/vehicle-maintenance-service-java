@@ -7,6 +7,7 @@ import java.util.ResourceBundle;
 import ca.humber.dao.UsersDao;
 import ca.humber.model.User;
 import ca.humber.model.UserRole;
+import ca.humber.util.HibernateUtil;
 import ca.humber.util.PasswordUtil;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -152,7 +153,8 @@ public class UserFormController implements Initializable {
 			// Close the form
 			closeForm();
 		} catch (Exception e) {
-			AlertDialog.showWarning("Error", "An error occurred while saving the user: " + e.getMessage());
+			String error = HibernateUtil.message(e);
+			AlertDialog.showWarning("Error", error);
 			e.printStackTrace();
 		}
 	}
