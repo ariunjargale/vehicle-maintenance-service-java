@@ -5,6 +5,7 @@ import java.util.ResourceBundle;
 
 import ca.humber.App;
 import ca.humber.service.AuthService;
+import ca.humber.util.HibernateUtil;
 import ca.humber.util.SessionManager;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -62,14 +63,10 @@ public class LoginController implements Initializable {
 				Platform.runLater(this::openDashboard);
 
 			} catch (Exception e) {
-				String errorMessage = e.getMessage();
-				if (errorMessage.contains("ORA-")) {
-					errorMessage = errorMessage.split("\n")[0].replace("ORA-20001:", "").trim();
-				}
-				String finalError = errorMessage;
+				String error = HibernateUtil.message(e);
 
 				Platform.runLater(() -> {
-					AlertDialog.showWarning("Login Failed", finalError);
+					AlertDialog.showWarning("Login Failed", error);
 				});
 			} finally {
 				Platform.runLater(() -> loadingPane.setVisible(false));

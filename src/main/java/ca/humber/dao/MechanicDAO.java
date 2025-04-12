@@ -3,6 +3,8 @@ package ca.humber.dao;
 import ca.humber.exceptions.ConstraintException;
 import ca.humber.model.Mechanic;
 import ca.humber.util.HibernateUtil;
+import ca.humber.util.SessionManager;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.exception.ConstraintViolationException;
@@ -35,7 +37,7 @@ public class MechanicDAO {
      */
     public static List<Mechanic> getActiveMechanics() {
         List<Mechanic> mechanics = new ArrayList<>();
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             // Query all active mechanics
             mechanics = session.createQuery("FROM Mechanic WHERE isActive = true ORDER BY name", Mechanic.class).list();
         } catch (Exception e) {
@@ -49,7 +51,7 @@ public class MechanicDAO {
      */
     public static List<Mechanic> getAllMechanics() {
         List<Mechanic> mechanics = new ArrayList<>();
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             mechanics = session.createQuery("FROM Mechanic ORDER BY name", Mechanic.class).list();
         } catch (Exception e) {
             e.printStackTrace();
@@ -61,7 +63,7 @@ public class MechanicDAO {
      * Get a mechanic by ID
      */
     public static Mechanic getMechanicById(int id) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             return session.get(Mechanic.class, id);
         } catch (Exception e) {
             e.printStackTrace();
@@ -74,7 +76,7 @@ public class MechanicDAO {
      */
     public static List<Mechanic> getMechanicsBySpecialization(String specialization) {
         List<Mechanic> mechanics = new ArrayList<>();
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             Query<Mechanic> query = session.createQuery(
                     "FROM Mechanic WHERE isActive = true AND specialization = :spec ORDER BY name",
                     Mechanic.class);
@@ -91,7 +93,7 @@ public class MechanicDAO {
      */
     public static List<Mechanic> searchMechanics(String searchTerm) {
         List<Mechanic> results = new ArrayList<>();
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             String searchPattern = "%" + searchTerm.toLowerCase() + "%";
             Query<Mechanic> query = session.createQuery(
                     "FROM Mechanic m WHERE m.isActive = true AND (LOWER(m.name) LIKE :searchPattern " +
@@ -111,7 +113,7 @@ public class MechanicDAO {
      */
     public static boolean createMechanic(Mechanic mechanic) {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             transaction = session.beginTransaction();
 
             // Set as active by default
@@ -134,7 +136,7 @@ public class MechanicDAO {
      */
     public static boolean updateMechanic(Mechanic mechanic) {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             transaction = session.beginTransaction();
 
             Mechanic existingMechanic = session.get(Mechanic.class, mechanic.getMechanicId());
@@ -164,7 +166,7 @@ public class MechanicDAO {
      */
     public static boolean deleteMechanic(int mechanicId) throws ConstraintException {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             transaction = session.beginTransaction();
 
             Mechanic mechanic = session.get(Mechanic.class, mechanicId);
@@ -207,7 +209,7 @@ public class MechanicDAO {
      */
     public static boolean reactivateMechanic(int mechanicId) {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             transaction = session.beginTransaction();
 
             Mechanic mechanic = session.get(Mechanic.class, mechanicId);

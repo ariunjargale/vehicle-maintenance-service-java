@@ -4,6 +4,7 @@ import ca.humber.model.RolePermission;
 import ca.humber.model.User;
 import org.hibernate.Session;
 
+import java.sql.Connection;
 import java.util.List;
 
 public class SessionManager {
@@ -11,6 +12,7 @@ public class SessionManager {
 	private static User currentUser;
 	private static Session session;
 	private static List<RolePermission> rolePermissions;
+	private static Connection dbConnection;
 
 	private SessionManager() {
 	}
@@ -42,7 +44,11 @@ public class SessionManager {
 
 	public static Session getSession() {
 		if (session == null || !session.isOpen()) {
-			throw new IllegalStateException("Hibernate session is not initialized or already closed.");
+			session = HibernateUtil.getSessionFactory().openSession();
+			session.doWork(conn -> {
+				SessionManager.setDbConnection(conn); 
+			});
+//			throw new IllegalStateException("Hibernate session is not initialized or already closed.");
 		}
 		return session;
 	}
@@ -57,4 +63,13 @@ public class SessionManager {
 	public static boolean isLoggedIn() {
 		return currentUser != null && session != null && session.isOpen();
 	}
+
+	public static void setDbConnection(Connection conn) {
+		dbConnection = conn;
+	}
+
+	public static Connection getDbConnection() {
+		return dbConnection;
+	}
+
 }

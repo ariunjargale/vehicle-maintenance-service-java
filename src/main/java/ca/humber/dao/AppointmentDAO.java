@@ -7,6 +7,8 @@ import ca.humber.model.Mechanic;
 import ca.humber.model.Service;
 import ca.humber.model.Vehicle;
 import ca.humber.util.HibernateUtil;
+import ca.humber.util.SessionManager;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
@@ -30,7 +32,7 @@ public class AppointmentDAO {
     // Retrieve all appointments
     public static List<Appointment> getAllAppointments() {
         List<Appointment> appointments = new ArrayList<>();
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             // Use HQL to query all active appointments
             appointments = session
                     .createQuery("FROM Appointment WHERE isActive = true ORDER BY appointmentDate", Appointment.class)
@@ -43,7 +45,7 @@ public class AppointmentDAO {
 
     // Retrieve an appointment by ID
     public static Appointment getAppointmentById(int id) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             return session.get(Appointment.class, id);
         } catch (Exception e) {
             e.printStackTrace();
@@ -57,7 +59,7 @@ public class AppointmentDAO {
         Session session = null;
 
         try {
-            session = HibernateUtil.getSessionFactory().openSession();
+            session = SessionManager.getSession();
             transaction = session.beginTransaction();
 
             // Validate foreign key relationships
@@ -115,27 +117,26 @@ public class AppointmentDAO {
                 }
             }
 
-            // Handle SQL errors
-            Throwable cause = e;
-            while (cause != null) {
-                if (cause.getMessage() != null && cause.getMessage().contains("ORA-02291")) {
-                    throw  new RuntimeException("Foreign key constraint error: Referenced record does not exist");
-                }
-                else if (cause.getMessage() != null && cause.getMessage().contains("ORA-20001")) {
-                    throw  new RuntimeException("Low Stock Alert: Not enough inventory for the service");
-                }
-                cause = cause.getCause();
-            }
-
-            e.printStackTrace();
-            return false;
+//            // Handle SQL errors
+//            Throwable cause = e;
+//            while (cause != null) {
+//                if (cause.getMessage() != null && cause.getMessage().contains("ORA-02291")) {
+//                    throw  new RuntimeException("Foreign key constraint error: Referenced record does not exist");
+//                }
+//                else if (cause.getMessage() != null && cause.getMessage().contains("ORA-20001")) {
+//                    throw  new RuntimeException("Low Stock Alert: Not enough inventory for the service");
+//                }
+//                cause = cause.getCause();
+//            }
+            String error = HibernateUtil.message(e);
+            throw new RuntimeException(error);
         }
     }
 
     // Update appointment status
     public static boolean updateAppointmentStatus(int appointmentId, String statusId) {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             transaction = session.beginTransaction();
 
             Appointment appointment = session.get(Appointment.class, appointmentId);
@@ -159,7 +160,7 @@ public class AppointmentDAO {
     // Assign a mechanic to an appointment
     public static boolean assignMechanic(int appointmentId, int mechanicId) {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             transaction = session.beginTransaction();
 
             Appointment appointment = session.get(Appointment.class, appointmentId);
@@ -185,7 +186,7 @@ public class AppointmentDAO {
     // Delete an appointment (soft delete)
     public static boolean deleteAppointment(int appointmentId) throws ConstraintException {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             transaction = session.beginTransaction();
 
             Appointment appointment = session.get(Appointment.class, appointmentId);
@@ -211,7 +212,7 @@ public class AppointmentDAO {
     public static Map<String, String> getAvailableSlots(Date date) {
         Map<String, String> availableSlots = new HashMap<>();
 
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             // Set the start and end time of the date
             Calendar cal = Calendar.getInstance();
             cal.setTime(date);
@@ -267,7 +268,7 @@ public class AppointmentDAO {
     // Search appointments
     public static List<Appointment> searchAppointments(String searchTerm) {
         List<Appointment> results = new ArrayList<>();
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             // Use Criteria API for multi-field fuzzy search
             CriteriaBuilder builder = session.getCriteriaBuilder();
             CriteriaQuery<Appointment> criteriaQuery = builder.createQuery(Appointment.class);
@@ -313,7 +314,7 @@ public class AppointmentDAO {
         }
 
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             transaction = session.beginTransaction();
 
             // Get the existing appointment from the database
@@ -372,7 +373,7 @@ public class AppointmentDAO {
      * @return True if there is a conflict, false otherwise.
      */
     public static boolean isTimeColliding(Date appointmentDate, Integer currentAppointmentId) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = SessionManager.getSession()) {
             // Set the allowed appointment duration (in minutes)
             final int APPOINTMENT_DURATION_MINUTES = 60;
 

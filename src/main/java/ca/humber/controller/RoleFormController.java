@@ -5,6 +5,7 @@ import java.util.ResourceBundle;
 
 import ca.humber.dao.RoleDAO;
 import ca.humber.model.UserRole;
+import ca.humber.util.HibernateUtil;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -59,7 +60,8 @@ public class RoleFormController implements Initializable {
 
 			closeForm();
 		} catch (Exception e) {
-			AlertDialog.showWarning("Error", "An error occurred while saving the role: " + e.getMessage());
+			String error = HibernateUtil.message(e);
+			AlertDialog.showWarning("Error", error);
 			e.printStackTrace();
 		}
 	}

@@ -6,6 +6,7 @@ import java.util.ResourceBundle;
 import ca.humber.dao.RoleDAO;
 import ca.humber.model.RolePermission;
 import ca.humber.model.UserRole;
+import ca.humber.util.HibernateUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -79,7 +80,8 @@ public class PermissionFormController implements Initializable {
 
 			closeForm();
 		} catch (Exception e) {
-			AlertDialog.showWarning("Error", "An error occurred while saving the permission: " + e.getMessage());
+			String error = HibernateUtil.message(e);
+			AlertDialog.showWarning("Error", error);
 			e.printStackTrace();
 		}
 	}
