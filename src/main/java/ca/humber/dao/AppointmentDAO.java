@@ -394,7 +394,7 @@ public class AppointmentDAO {
                     });
                 }
 
-                // Update status using the stored procedure if it changed
+                // 確保這個條件正確評估
                 if (!existingAppointment.getStatusId().equals(appointment.getStatusId())) {
                     session.doWork(conn -> {
                         try (CallableStatement stmt = conn.prepareCall(

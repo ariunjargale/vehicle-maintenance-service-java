@@ -362,6 +362,9 @@ public class AppointmentFormController implements Initializable {
                     success = AppointmentDAO.createAppointment(newAppointment);
                     if (success) {
                         AlertDialog.showSuccess("Success", "Appointment created successfully.");
+                        if (parentController != null) {
+                            parentController.refreshAppointments();
+                        }
                     }
                 } else {
                     existingAppointment.setCustomer(selectedCustomer);
@@ -373,6 +376,9 @@ public class AppointmentFormController implements Initializable {
                     success = AppointmentDAO.updateAppointment(existingAppointment);
                     if (success) {
                         AlertDialog.showSuccess("Success", "Appointment updated successfully.");
+                        if (parentController != null) {
+                            parentController.refreshAppointments();
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -545,5 +551,11 @@ public class AppointmentFormController implements Initializable {
     private void closeForm() {
         Stage stage = (Stage) cancelButton.getScene().getWindow();
         stage.close();
+    }
+
+
+    public void setPreselectedDate(LocalDate date) {
+        appointmentDatePicker.setValue(date);
+        loadAvailableTimes(date);
     }
 }
