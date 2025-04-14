@@ -275,26 +275,58 @@ public class AppointmentDAO {
             Root<Appointment> root = criteriaQuery.from(Appointment.class);
 
             String pattern = "%" + searchTerm.toLowerCase() + "%";
-
-            // Create search conditions
-            Predicate customerNamePredicate = builder.like(builder.lower(root.get("customer").get("name")), pattern);
-            Predicate vehicleMakePredicate = builder.like(builder.lower(root.get("vehicle").get("make")), pattern);
-            Predicate vehicleModelPredicate = builder.like(builder.lower(root.get("vehicle").get("model")), pattern);
-            Predicate serviceNamePredicate = builder.like(builder.lower(root.get("service").get("serviceName")), pattern);
-
-            // Combine search conditions
-            Predicate finalPredicate = builder.or(
-                    customerNamePredicate,
-                    vehicleMakePredicate,
-                    vehicleModelPredicate,
-                    serviceNamePredicate);
+            
+            // Create search conditions for all relevant fields
+            List<Predicate> predicates = new ArrayList<>();
+            
+            // Customer information
+            predicates.add(builder.like(builder.lower(root.get("customer").get("name")), pattern));
+            predicates.add(builder.like(builder.lower(root.get("customer").get("phone")), pattern));
+            predicates.add(builder.like(builder.lower(root.get("customer").get("email")), pattern));
+            
+            // Vehicle information
+            predicates.add(builder.like(builder.lower(root.get("vehicle").get("make")), pattern));
+            predicates.add(builder.like(builder.lower(root.get("vehicle").get("model")), pattern));
+            predicates.add(builder.like(builder.lower(root.get("vehicle").get("vin")), pattern));
+            predicates.add(builder.like(builder.function("to_char", String.class, root.get("vehicle").get("year")), pattern));
+            
+            // Service information
+            predicates.add(builder.like(builder.lower(root.get("service").get("serviceName")), pattern));
+            predicates.add(builder.like(builder.lower(root.get("service").get("serviceTypeId")), pattern));
+            
+            // Mechanic information
+            predicates.add(builder.like(builder.lower(root.get("mechanic").get("name")), pattern));
+            predicates.add(builder.like(builder.lower(root.get("mechanic").get("specialization")), pattern));
+            
+            // Appointment status
+            predicates.add(builder.like(builder.lower(root.get("statusId")), pattern));
+            
+            // Appointment ID
+            predicates.add(builder.like(builder.function("to_char", String.class, root.get("appointmentId")), pattern));
+            
+            // Date - try to match both full date format and partial formats like year or month
+            predicates.add(builder.like(builder.function("to_char", String.class, root.get("appointmentDate"), 
+                    builder.literal("YYYY-MM-DD HH24:MI")), pattern));
+            predicates.add(builder.like(builder.function("to_char", String.class, root.get("appointmentDate"), 
+                    builder.literal("YYYY-MM-DD")), pattern));
+            predicates.add(builder.like(builder.function("to_char", String.class, root.get("appointmentDate"), 
+                    builder.literal("YYYY-MM")), pattern));
+            predicates.add(builder.like(builder.function("to_char", String.class, root.get("appointmentDate"), 
+                    builder.literal("YYYY")), pattern));
+            predicates.add(builder.like(builder.function("to_char", String.class, root.get("appointmentDate"), 
+                    builder.literal("HH24:MI")), pattern));
+            
+            // Combine all search conditions with OR
+            Predicate finalPredicate = builder.or(predicates.toArray(new Predicate[0]));
 
             // Only search active appointments
             Predicate isActivePredicate = builder.equal(root.get("isActive"), true);
             finalPredicate = builder.and(finalPredicate, isActivePredicate);
 
-            // Complete the query
+            // Complete the query with ordering by appointment date (newest first)
             criteriaQuery.where(finalPredicate);
+            criteriaQuery.orderBy(builder.desc(root.get("appointmentDate")));
+            
             results = session.createQuery(criteriaQuery).getResultList();
         } catch (Exception e) {
             e.printStackTrace();
