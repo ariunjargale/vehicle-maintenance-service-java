@@ -376,9 +376,11 @@ public class AppointmentFormController implements Initializable {
                     success = AppointmentDAO.updateAppointment(existingAppointment);
                     if (success) {
                         AlertDialog.showSuccess("Success", "Appointment updated successfully.");
+ 
                         if (parentController != null) {
                             parentController.refreshAppointments();
                         }
+                        ((Stage) saveButton.getScene().getWindow()).close();
                     }
                 }
             } catch (Exception e) {

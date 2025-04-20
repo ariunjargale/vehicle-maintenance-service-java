@@ -402,6 +402,8 @@ public class AppointmentDAO {
                             stmt.setInt(1, appointment.getAppointmentId());
                             stmt.setString(2, appointment.getStatusId());
                             stmt.execute();
+                            
+                            existingAppointment.setStatusId(appointment.getStatusId());
                         } catch (SQLException e) {
                             handlePackageError(e, "sp_update_appointment_status");
                             throw new RuntimeException(e);

@@ -513,7 +513,7 @@ public class AppointmentsTabController implements Initializable {
                 statusColor = "#f6ffed"; // Light green
                 break;
             case "P": // Paid
-                statusColor = "#e6f5ff"; // Lavender
+                statusColor = "#d9d9d9"; 
                 break;
             case "X": // Cancelled
                 statusColor = "#fff1f0"; // Light red
@@ -540,6 +540,12 @@ public class AppointmentsTabController implements Initializable {
             customerName = customerName.substring(0, 7) + "..";
         }
         Label customerLabel = new Label(customerName);
+        
+
+        if ("P".equals(appointment.getStatusId())) {
+            timeLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #777777;");
+            customerLabel.setStyle("-fx-text-fill: #777777;");
+        }
         
         appointmentBox.getChildren().addAll(timeLabel, customerLabel);
         
